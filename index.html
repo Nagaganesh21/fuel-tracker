@@ -5,15 +5,163 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fuel Tracker</title>
   <style>
-    /* (CSS unchanged for brevity) */
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 { margin: 0; font-size: 2rem; }
+    main {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      animation: fadeIn 0.4s ease;
+    }
+    /* Form grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px 16px;
+      align-items: end;
+    }
+    .form-grid label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+    }
+    .form-grid input {
+      width: 100%;
+      max-width: 140px;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    /* Global pill buttons */
+    button {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      border-radius: 20px;
+      background: #4e54c8;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.3s, transform 0.2s;
+    }
+    button:hover {
+      background: #3b40a4;
+      transform: scale(1.05);
+    }
+    button.danger { background: #e63946; }
+    button.danger:hover { background: #c92a37; }
+    /* Action buttons inside table */
+    .action-group {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+    .action-btn {
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .action-btn.edit { background: #2a9d8f; }
+    .action-btn.edit:hover { background: #21867a; }
+    .action-btn.delete { background: #e63946; }
+    .action-btn.delete:hover { background: #c92a37; }
+    /* Records header with export button */
+    .records-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .records-header h2 { margin: 0; }
+    .export-btn { background: #4e54c8; }
+    .export-btn:hover { background: #3b40a4; }
+    /* Settings */
+    .settings { text-align: right; margin: 10px; }
+    .settings-toggle { background: #4e54c8; }
+    .settings-toggle:hover { background: #3b40a4; }
+    .settings-panel {
+      display: none;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin: 10px;
+    }
+    .settings-panel .action-btn {
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+    .settings-panel .action-btn.save { background: #2a9d8f; }
+    .settings-panel .action-btn.save:hover { background: #21867a; }
+    .settings-panel .action-btn.reset { background: #e63946; }
+    .settings-panel .action-btn.reset:hover { background: #c92a37; }
+    /* Table */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background: #f0f0f0; }
+    /* Toast */
+    .toast {
+      visibility: hidden;
+      min-width: 200px;
+      margin-left: -100px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 12px;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      bottom: 30px;
+      font-size: 1rem;
+      opacity: 0;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+    .toast.show { visibility: visible; opacity: 1; }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
   </style>
 </head>
 <body>
   <header><h1>⛽ Fuel Tracker</h1></header>
 
+  <!-- Settings toggle -->
   <div class="settings">
     <button onclick="toggleSettings()" class="settings-toggle">⚙️ Settings</button>
   </div>
+  <!-- Settings panel -->
   <div class="settings-panel" id="settingsPanel">
     <label>Bike Mileage (km/L)</label>
     <input type="number" id="bikeMileage" step="0.1">
@@ -24,10 +172,10 @@
   </div>
 
   <main>
+    <!-- Add/Edit Form -->
     <div class="card">
       <h2>Add / Edit Entry</h2>
       <form id="fuelForm" class="form-grid">
-        <div><label>Date</label><input type="date" id="date" required></div>
         <div><label>Meter Start</label><input type="number" id="meterStart" step="0.1" required></div>
         <div><label>Meter End</label><input type="number" id="meterEnd" step="0.1" required></div>
         <div><label>Distance</label><input type="number" id="distance" step="0.1" readonly></div>
@@ -40,6 +188,7 @@
       </form>
     </div>
 
+    <!-- Records -->
     <div class="card">
       <div class="records-header">
         <h2>Records</h2>
@@ -56,6 +205,7 @@
       </table>
     </div>
 
+    <!-- Monthly Summary -->
     <div class="card">
       <h2>Monthly Summaries</h2>
       <div id="monthlySummary"></div>
@@ -91,12 +241,10 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('date')?.remove(); // remove hidden date if any
       migrateRecords();
       renderRecords(); renderSummaries();
       document.getElementById('bikeMileage').value = BIKE_MILEAGE;
-      // Set default date field to today
-      let today = new Date().toISOString().split('T')[0];
-      document.getElementById('date').value = today;
     });
 
     document.getElementById('meterEnd').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
@@ -120,7 +268,6 @@
 
     document.getElementById('fuelForm').addEventListener('submit', e => {
       e.preventDefault();
-      let date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
       let start = roundN(document.getElementById('meterStart').value, 1);
       let end = roundN(document.getElementById('meterEnd').value, 1);
       if(end < start){ alert('End meter must be greater than start meter'); return; }
@@ -129,13 +276,12 @@
       let cost = roundN(document.getElementById('cost').value, 2);
       let remainingKm = roundN(document.getElementById('remainingKm').value, 1);
 
+      let date = new Date().toISOString().split('T')[0];
       let record = {date, start, end, distance, fuel, cost, remainingKm};
       if(editIndex >= 0){ records[editIndex] = record; editIndex = -1; }
       else { records.push(record); }
       localStorage.setItem('fuelRecords', JSON.stringify(records));
       showToast(); e.target.reset();
-      // Reset date to today after saving
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
       renderRecords(); renderSummaries();
     });
 
@@ -192,7 +338,6 @@
 
     function editRecord(i){
       let r = records[i];
-      document.getElementById('date').value = r.date || new Date().toISOString().split('T')[0];
       document.getElementById('meterStart').value = num(r.start).toFixed(1);
       document.getElementById('meterEnd').value = num(r.end).toFixed(1);
       document.getElementById('distance').value = num(r.distance).toFixed(1);
@@ -211,9 +356,9 @@
     }
 
     function exportCSV(){
-      let csv = 'Date,Start,End,Distance,Fuel,Cost,Remaining KM\\n';
+      let csv = 'Date,Start,End,Distance,Fuel,Cost,Remaining KM\n';
       records.forEach(r => {
-        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuel},${r.cost},${r.remainingKm}\\n`;
+        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuel},${r.cost},${r.remainingKm}\n`;
       });
       let blob = new Blob([csv], { type: 'text/csv' });
       let link = document.createElement('a');
@@ -233,7 +378,7 @@
       p.style.display = p.style.display === 'block' ? 'none':'block';
     }
 
-    function saveSettings() {
+    function saveSettings(){
       const mileageInput = num(document.getElementById('bikeMileage').value, 40);
       BIKE_MILEAGE = mileageInput > 0 ? mileageInput : 40;
       localStorage.setItem('bikeMileage', BIKE_MILEAGE);
