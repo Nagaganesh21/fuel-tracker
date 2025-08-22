@@ -128,6 +128,9 @@
     <button onclick="toggleSettings()">⚙️ Settings</button>
   </div>
   <div class="settings-panel" id="settingsPanel">
+    <label>Bike Mileage (km/L)</label>
+    <input type="number" id="bikeMileage" step="0.1">
+    <button onclick="saveSettings()">Save Settings</button>
     <button onclick="resetApp()" style="background:#e63946">Reset App</button>
   </div>
 
@@ -189,12 +192,48 @@
   <div id="toast" class="toast">✅ Saved successfully</div>
 
   <script>
-    const BIKE_MILEAGE = 40; // km per liter
+    let BIKE_MILEAGE = Number(localStorage.getItem('bikeMileage')) || 40; // default 40 km/L
     let records = JSON.parse(localStorage.getItem('fuelRecords')) || [];
     let editIndex = -1;
 
+    const num = (v, def = 0) => {
+      v = Number(v);
+      return Number.isFinite(v) ? v : def;
+    };
+    const roundN = (v, n = 1) => Number(num(v, 0).toFixed(n));
+
+    function migrateRecords() {
+      let changed = false;
+      records = records.map(r => {
+        const start = num(r.start);
+        const end = num(r.end);
+        const distance = num(r.distance);
+        const fuel = num(r.fuel);
+        const cost = num(r.cost);
+        let remainingKm = r.remainingKm;
+        if (!Number.isFinite(remainingKm)) {
+          remainingKm = roundN((fuel * BIKE_MILEAGE) - distance, 1);
+          changed = true;
+        }
+        return {
+          ...r,
+          start: roundN(start, 1),
+          end: roundN(end, 1),
+          distance: roundN(distance, 1),
+          fuel: roundN(fuel, 1),
+          cost: roundN(cost, 2),
+          remainingKm: roundN(remainingKm, 1)
+        };
+      });
+      if (changed) {
+        localStorage.setItem('fuelRecords', JSON.stringify(records));
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('bikeMileage').value = BIKE_MILEAGE;
+      migrateRecords();
       renderRecords();
       renderSummaries();
     });
@@ -204,15 +243,15 @@
     document.getElementById('fuel').addEventListener('input', calcRemainingKm);
 
     function calcDistance() {
-      let start = parseFloat(document.getElementById('meterStart').value) || 0;
-      let end = parseFloat(document.getElementById('meterEnd').value) || 0;
+      let start = num(document.getElementById('meterStart').value);
+      let end = num(document.getElementById('meterEnd').value);
       let dist = end - start;
       document.getElementById('distance').value = dist > 0 ? (dist).toFixed(1) : 0;
     }
 
     function calcRemainingKm() {
-      let distance = parseFloat(document.getElementById('distance').value) || 0;
-      let fuel = parseFloat(document.getElementById('fuel').value) || 0;
+      let distance = num(document.getElementById('distance').value);
+      let fuel = num(document.getElementById('fuel').value);
       let possible_km = fuel * BIKE_MILEAGE;
       let remaining_km = possible_km - distance;
       document.getElementById('remainingKm').value = remaining_km > 0 ? remaining_km.toFixed(1) : 0;
@@ -221,16 +260,16 @@
     document.getElementById('fuelForm').addEventListener('submit', e => {
       e.preventDefault();
       let date = document.getElementById('date').value;
-      let start = Number(parseFloat(document.getElementById('meterStart').value).toFixed(1));
-      let end = Number(parseFloat(document.getElementById('meterEnd').value).toFixed(1));
+      let start = roundN(document.getElementById('meterStart').value, 1);
+      let end = roundN(document.getElementById('meterEnd').value, 1);
       if(end < start){
         alert('End meter must be greater than start meter');
         return;
       }
-      let distance = Number((end - start).toFixed(1));
-      let fuel = Number(parseFloat(document.getElementById('fuel').value).toFixed(1));
-      let cost = Number(parseFloat(document.getElementById('cost').value).toFixed(2));
-      let remainingKm = Number(document.getElementById('remainingKm').value);
+      let distance = roundN(end - start, 1);
+      let fuel = roundN(document.getElementById('fuel').value, 1);
+      let cost = roundN(document.getElementById('cost').value, 2);
+      let remainingKm = roundN(document.getElementById('remainingKm').value, 1);
 
       let record = {date, start, end, distance, fuel, cost, remainingKm};
 
@@ -252,14 +291,20 @@
       let tbody = document.querySelector('#recordsTable tbody');
       tbody.innerHTML = '';
       records.forEach((r,i) => {
+        const start = num(r.start);
+        const end = num(r.end);
+        const distance = num(r.distance);
+        const fuel = num(r.fuel);
+        const cost = num(r.cost);
+        const remaining = Number.isFinite(r.remainingKm) ? num(r.remainingKm) : roundN((fuel * BIKE_MILEAGE) - distance, 1);
         let row = `<tr>
-          <td>${r.date}</td>
-          <td>${r.start.toFixed(1)}</td>
-          <td>${r.end.toFixed(1)}</td>
-          <td>${r.distance.toFixed(1)}</td>
-          <td>${r.fuel.toFixed(1)}</td>
-          <td>₹${r.cost.toFixed(2)}</td>
-          <td>${r.remainingKm.toFixed(1)}</td>
+          <td>${r.date || ''}</td>
+          <td>${start.toFixed(1)}</td>
+          <td>${end.toFixed(1)}</td>
+          <td>${distance.toFixed(1)}</td>
+          <td>${fuel.toFixed(1)}</td>
+          <td>₹${cost.toFixed(2)}</td>
+          <td>${remaining.toFixed(1)}</td>
           <td>
             <button onclick="editRecord(${i})">Edit</button>
             <button onclick="deleteRecord(${i})" style="background:#e63946">Delete</button>
@@ -274,33 +319,39 @@
       summaryDiv.innerHTML = '';
       let grouped = {};
       records.forEach(r => {
-        let month = r.date.substring(0,7);
+        let month = (r.date || '').substring(0,7);
         if(!grouped[month]) grouped[month] = {distance:0,fuel:0,cost:0,remaining:0};
-        grouped[month].distance += r.distance;
-        grouped[month].fuel += r.fuel;
-        grouped[month].cost += r.cost;
-        grouped[month].remaining += r.remainingKm;
+        const d = num(r.distance);
+        const f = num(r.fuel);
+        const c = num(r.cost);
+        const rem = Number.isFinite(r.remainingKm) ? num(r.remainingKm) : roundN((f * BIKE_MILEAGE) - d, 1);
+        grouped[month].distance += d;
+        grouped[month].fuel += f;
+        grouped[month].cost += c;
+        grouped[month].remaining += rem;
       });
       for(let m in grouped){
-        let avgMileage = (grouped[m].distance / grouped[m].fuel).toFixed(2);
+        const g = grouped[m];
+        const avgMileage = g.fuel > 0 ? (g.distance / g.fuel).toFixed(2) : '—';
         summaryDiv.innerHTML += `<p><b>${m}</b>: 
-          ${grouped[m].distance.toFixed(1)} km, 
-          ${grouped[m].fuel.toFixed(1)} L, 
-          ₹${grouped[m].cost.toFixed(2)}, 
+          ${g.distance.toFixed(1)} km, 
+          ${g.fuel.toFixed(1)} L, 
+          ₹${g.cost.toFixed(2)}, 
           Mileage: ${avgMileage} km/L, 
-          Remaining: ${grouped[m].remaining.toFixed(1)} km</p>`;
+          Remaining: ${g.remaining.toFixed(1)} km</p>`;
       }
     }
 
     function editRecord(i){
       let r = records[i];
-      document.getElementById('date').value = r.date;
-      document.getElementById('meterStart').value = r.start;
-      document.getElementById('meterEnd').value = r.end;
-      document.getElementById('distance').value = r.distance;
-      document.getElementById('fuel').value = r.fuel;
-      document.getElementById('cost').value = r.cost;
-      document.getElementById('remainingKm').value = r.remainingKm;
+      document.getElementById('date').value = r.date || new Date().toISOString().split('T')[0];
+      document.getElementById('meterStart').value = num(r.start).toFixed(1);
+      document.getElementById('meterEnd').value = num(r.end).toFixed(1);
+      document.getElementById('distance').value = num(r.distance).toFixed(1);
+      document.getElementById('fuel').value = num(r.fuel).toFixed(1);
+      document.getElementById('cost').value = num(r.cost).toFixed(2);
+      const rem = Number.isFinite(r.remainingKm) ? num(r.remainingKm) : roundN((num(r.fuel) * BIKE_MILEAGE) - num(r.distance), 1);
+      document.getElementById('remainingKm').value = rem.toFixed(1);
       editIndex = i;
     }
 
@@ -314,9 +365,15 @@
     }
 
     function exportCSV(){
-      let csv = 'Date,Start,End,Distance,Fuel,Cost,Remaining KM\n';
+      let csv = 'Date,Start,End,Distance,Fuel,Cost,Remaining KM\\n';
       records.forEach(r => {
-        csv += `${r.date},${r.start.toFixed(1)},${r.end.toFixed(1)},${r.distance.toFixed(1)},${r.fuel.toFixed(1)},${r.cost.toFixed(2)},${r.remainingKm.toFixed(1)}\n`;
+        const start = num(r.start).toFixed(1);
+        const end = num(r.end).toFixed(1);
+        const distance = num(r.distance).toFixed(1);
+        const fuel = num(r.fuel).toFixed(1);
+        const cost = num(r.cost).toFixed(2);
+        const remaining = (Number.isFinite(r.remainingKm) ? num(r.remainingKm) : roundN((num(r.fuel) * BIKE_MILEAGE) - num(r.distance), 1)).toFixed(1);
+        csv += `${r.date || ''},${start},${end},${distance},${fuel},${cost},${remaining}\\n`;
       });
       let blob = new Blob([csv], { type: 'text/csv' });
       let link = document.createElement('a');
@@ -334,6 +391,16 @@
     function toggleSettings(){
       let p = document.getElementById('settingsPanel');
       p.style.display = p.style.display === 'block' ? 'none':'block';
+    }
+
+    function saveSettings(){
+      const mileageInput = num(document.getElementById('bikeMileage').value, 40);
+      BIKE_MILEAGE = mileageInput > 0 ? mileageInput : 40;
+      localStorage.setItem('bikeMileage', BIKE_MILEAGE);
+      alert('Bike mileage updated to ' + BIKE_MILEAGE + ' km/L');
+      calcRemainingKm();
+      renderRecords();
+      renderSummaries();
     }
 
     function resetApp(){
