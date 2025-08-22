@@ -8,301 +8,311 @@
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      background: linear-gradient(to right, #f9f9f9, #e0f7fa);
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       color: #333;
     }
     header {
-      background: #00796b;
-      color: white;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
       padding: 1rem;
       text-align: center;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
     .container {
+      width: 95%;
       max-width: 900px;
-      margin: 2rem auto;
-      padding: 1rem;
+      margin-top: 1.5rem;
     }
     .card {
       background: white;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
     }
-    label { display: block; margin-top: 0.5rem; }
-    input, textarea, select, button {
-      width: 100%;
+    .card:hover {
+      transform: translateY(-3px);
+    }
+    h2 {
+      margin-top: 0;
+    }
+    label {
+      display: block;
+      margin: 0.5rem 0 0.2rem;
+      font-weight: bold;
+    }
+    input, button {
       padding: 0.5rem;
-      margin-top: 0.2rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      width: 100%;
+      margin-bottom: 1rem;
+      font-size: 1rem;
     }
     button {
-      background: #00796b;
+      background: #4facfe;
       color: white;
+      border: none;
       cursor: pointer;
-      margin-top: 1rem;
+      transition: transform 0.2s ease, background 0.2s ease;
     }
-    button:hover { background: #004d40; }
-    .stats-grid {
+    button:hover {
+      background: #00c6ff;
+      transform: scale(1.05);
+    }
+    .stats, .monthly-summary {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 1rem;
     }
-    .stat-card {
-      background: #e0f2f1;
+    .stat-card, .summary-card {
+      background: #f7f9fc;
+      border-radius: 12px;
       padding: 1rem;
-      border-radius: 8px;
       text-align: center;
-      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
     .record {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #ccc;
-      padding: 0.5rem 0;
+      padding: 0.8rem;
+      border-bottom: 1px solid #eee;
+      animation: fadeIn 0.5s ease;
     }
-    .toast {
+    .record:nth-child(odd) {background: #fafafa;}
+    .record-actions button {
+      margin-left: 0.5rem;
+      width: auto;
+      padding: 0.4rem 0.8rem;
+    }
+    #toast {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: #00796b;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 5px;
-      display: none;
+      background: #4caf50;
+      color: white;
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
     }
-    details.settings {
+    #toast.show {opacity: 1;}
+    @keyframes fadeIn {
+      from {opacity:0; transform: translateY(10px);}
+      to {opacity:1; transform: translateY(0);}
+    }
+    .settings {
       margin-top: 2rem;
+      text-align: center;
+    }
+    .settings-panel {
+      display: none;
+      margin-top: 1rem;
+    }
+    .settings-panel button {
+      background: #e74c3c;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Fuel Tracker</h1>
-    <p>Track fuel usage, cost, and mileage</p>
-  </header>
-
+  <header>⛽ Fuel Tracker</header>
   <div class="container">
     <div class="card">
-      <h2>Add / Edit Fuel Entry</h2>
-      <form id="fuelForm">
-        <label>Date: <input type="date" id="date" required></label>
-        <label>Start Meter: <input type="number" id="startMeter" required></label>
-        <label>End Meter: <input type="number" id="endMeter" required></label>
-        <label>Total Distance: <input type="number" id="totalDistance" readonly></label>
-        <label>Fuel Added (L): <input type="number" id="fuelAdded" step="0.01" required></label>
-        <label>Total Cost: <input type="number" id="fuelCost" step="0.01" required></label>
-        <label>Bike Efficiency (km/L): <input type="number" id="bikeEfficiency" step="0.1" required></label>
-        <label>Notes: <textarea id="notes"></textarea></label>
-        <div id="fuelSummary"></div>
-        <button type="submit" id="submitBtn">Add Entry</button>
-      </form>
+      <h2>Add / Edit Entry</h2>
+      <label>Date:</label>
+      <input type="date" id="date">
+      <label>Distance (km):</label>
+      <input type="number" id="distance">
+      <label>Fuel (liters):</label>
+      <input type="number" id="fuel">
+      <label>Cost:</label>
+      <input type="number" id="cost">
+      <label>Efficiency (km/l):</label>
+      <input type="number" id="efficiency">
+      <button onclick="addOrUpdateEntry()" id="addBtn">Add Entry</button>
     </div>
 
     <div class="card">
       <h2>Stats</h2>
-      <div class="stats-grid">
-        <div class="stat-card">Total Cost: ₹<span id="totalCost">0</span></div>
-        <div class="stat-card">Total Liters: <span id="totalLiters">0</span>L</div>
-        <div class="stat-card">Total Distance: <span id="totalDistanceStat">0</span> km</div>
-        <div class="stat-card">Avg Mileage: <span id="avgMileage">0</span> km/L</div>
-        <div class="stat-card">Current Range: <span id="currentRange">0</span> km</div>
-        <div class="stat-card">Cost/km: ₹<span id="costPerKm">0</span></div>
+      <div class="stats">
+        <div class="stat-card"><strong>Total Distance</strong><div id="totalDistanceStat">0</div></div>
+        <div class="stat-card"><strong>Total Fuel</strong><div id="totalFuel">0</div></div>
+        <div class="stat-card"><strong>Total Cost</strong><div id="totalCost">0</div></div>
+        <div class="stat-card"><strong>Actual Mileage</strong><div id="mileage">0</div></div>
       </div>
-    </div>
-
-    <div class="card">
-      <h2>Records</h2>
-      <div id="recordsList"></div>
       <button onclick="exportCSV()">📥 Export CSV</button>
     </div>
 
     <div class="card">
-      <h2>Monthly Summaries</h2>
-      <div id="monthlySummary"></div>
+      <h2>Records</h2>
+      <div id="records"></div>
     </div>
 
-    <details class="settings">
-      <summary>⚙️ Settings</summary>
-      <button onclick="clearAllData()" style="background:#b71c1c">Reset App (Clear All Data)</button>
-    </details>
+    <div class="card">
+      <h2>Monthly Summaries</h2>
+      <div id="monthlySummaries" class="monthly-summary"></div>
+    </div>
+
+    <div class="settings">
+      <button onclick="toggleSettings()">⚙️ Settings</button>
+      <div id="settingsPanel" class="settings-panel">
+        <button onclick="resetApp()">Reset App</button>
+      </div>
+    </div>
   </div>
 
-  <div class="toast" id="toast">✅ Saved successfully</div>
+  <div id="toast">✅ Saved Successfully!</div>
 
   <script>
-    let records = JSON.parse(localStorage.getItem('fuelRecords')) || [];
+    let records = JSON.parse(localStorage.getItem('records')) || [];
     let editIndex = null;
+    document.getElementById('efficiency').value = localStorage.getItem('efficiency') || 40;
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
       toast.textContent = msg;
-      toast.style.display = 'block';
-      setTimeout(() => toast.style.display = 'none', 2000);
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
     }
 
-    function setTodayDate() {
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    function render() {
+      const recordsDiv = document.getElementById('records');
+      recordsDiv.innerHTML = '';
+      let totalDistance = 0, totalFuel = 0, totalCost = 0;
+
+      records.forEach((r, i) => {
+        totalDistance += r.distance;
+        totalFuel += r.fuel;
+        totalCost += r.cost;
+
+        const div = document.createElement('div');
+        div.className = 'record';
+        div.innerHTML = `
+          <div>${r.date} - ${r.distance} km, ${r.fuel} L, ₹${r.cost}, Eff: ${r.efficiency} km/l</div>
+          <div class="record-actions">
+            <button onclick="editEntry(${i})">Edit</button>
+            <button onclick="deleteEntry(${i})">Delete</button>
+          </div>`;
+        recordsDiv.appendChild(div);
+      });
+
+      document.getElementById('totalDistanceStat').innerText = totalDistance;
+      document.getElementById('totalFuel').innerText = totalFuel;
+      document.getElementById('totalCost').innerText = totalCost;
+      document.getElementById('mileage').innerText = totalFuel ? (totalDistance/totalFuel).toFixed(2) : 0;
+
+      renderMonthlySummaries();
+      localStorage.setItem('records', JSON.stringify(records));
     }
 
-    function calculateDistance() {
-      const start = parseFloat(document.getElementById('startMeter').value) || 0;
-      const end = parseFloat(document.getElementById('endMeter').value) || 0;
-      document.getElementById('totalDistance').value = end - start;
-      calculateFuelDetails();
-    }
+    function addOrUpdateEntry() {
+      const date = document.getElementById('date').value;
+      const distance = parseFloat(document.getElementById('distance').value);
+      const fuel = parseFloat(document.getElementById('fuel').value);
+      const cost = parseFloat(document.getElementById('cost').value);
+      const efficiency = parseFloat(document.getElementById('efficiency').value);
 
-    function calculateFuelDetails() {
-      const fuel = parseFloat(document.getElementById('fuelAdded').value);
-      const cost = parseFloat(document.getElementById('fuelCost').value);
-      const distance = parseFloat(document.getElementById('totalDistance').value);
-      const efficiency = parseFloat(document.getElementById('bikeEfficiency').value);
+      if (!date || isNaN(distance) || isNaN(fuel) || isNaN(cost)) return alert('Fill all fields');
 
-      if (!isNaN(fuel) && !isNaN(cost) && fuel > 0) {
-        const pricePerLiter = (cost / fuel).toFixed(2);
-        const mileage = (!isNaN(distance) && distance > 0 && fuel > 0) ? (distance / fuel).toFixed(2) : "-";
-        const remainingRange = (!isNaN(efficiency) && fuel > 0) ? (efficiency * fuel).toFixed(0) : "-";
-
-        document.getElementById('fuelSummary').innerHTML = 
-          `<p>Price per liter: ₹${pricePerLiter}</p>
-           <p>Actual Mileage: ${mileage} km/L</p>
-           <p>Remaining Range: ${remainingRange} km</p>`;
-      }
-    }
-
-    document.getElementById('fuelForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const entry = {
-        date: document.getElementById('date').value,
-        start: parseFloat(document.getElementById('startMeter').value),
-        end: parseFloat(document.getElementById('endMeter').value),
-        distance: parseFloat(document.getElementById('totalDistance').value),
-        fuel: parseFloat(document.getElementById('fuelAdded').value),
-        cost: parseFloat(document.getElementById('fuelCost').value),
-        efficiency: parseFloat(document.getElementById('bikeEfficiency').value),
-        notes: document.getElementById('notes').value
-      };
+      const entry = {date, distance, fuel, cost, efficiency};
 
       if (editIndex !== null) {
         records[editIndex] = entry;
         editIndex = null;
-        document.getElementById('submitBtn').textContent = 'Add Entry';
+        document.getElementById('addBtn').innerText = 'Add Entry';
+        showToast('✅ Entry Updated!');
       } else {
         records.push(entry);
+        showToast('✅ Entry Added!');
       }
 
-      localStorage.setItem('fuelRecords', JSON.stringify(records));
-      updateDisplay();
-      showToast('✅ Saved successfully');
-      this.reset();
-      setTodayDate();
-    });
+      localStorage.setItem('efficiency', efficiency);
 
-    function deleteEntry(i) {
-      records.splice(i,1);
-      localStorage.setItem('fuelRecords', JSON.stringify(records));
-      updateDisplay();
-      showToast('🗑️ Entry deleted');
+      document.getElementById('date').value = '';
+      document.getElementById('distance').value = '';
+      document.getElementById('fuel').value = '';
+      document.getElementById('cost').value = '';
+
+      render();
     }
 
     function editEntry(i) {
-      const entry = records[i];
-      document.getElementById('date').value = entry.date;
-      document.getElementById('startMeter').value = entry.start;
-      document.getElementById('endMeter').value = entry.end;
-      document.getElementById('totalDistance').value = entry.distance;
-      document.getElementById('fuelAdded').value = entry.fuel;
-      document.getElementById('fuelCost').value = entry.cost;
-      document.getElementById('bikeEfficiency').value = entry.efficiency;
-      document.getElementById('notes').value = entry.notes;
+      const r = records[i];
+      document.getElementById('date').value = r.date;
+      document.getElementById('distance').value = r.distance;
+      document.getElementById('fuel').value = r.fuel;
+      document.getElementById('cost').value = r.cost;
+      document.getElementById('efficiency').value = r.efficiency;
       editIndex = i;
-      document.getElementById('submitBtn').textContent = 'Update Entry';
+      document.getElementById('addBtn').innerText = 'Update Entry';
     }
 
-    function updateDisplay() {
-      updateStats();
-      updateRecordsList();
-      updateMonthlySummary();
-    }
-
-    function updateStats() {
-      const totalCost = records.reduce((sum,r)=>sum+r.cost,0);
-      const totalLiters = records.reduce((sum,r)=>sum+r.fuel,0);
-      const totalDistance = records.reduce((sum,r)=>sum+r.distance,0);
-      const avgMileage = totalLiters>0 ? (totalDistance/totalLiters).toFixed(2) : 0;
-      const costPerKm = totalDistance>0 ? (totalCost/totalDistance).toFixed(2) : 0;
-      const currentRange = records.length>0 ? (records[records.length-1].efficiency * (records[records.length-1].fuel)).toFixed(0) : 0;
-
-      document.getElementById('totalCost').textContent = totalCost.toFixed(2);
-      document.getElementById('totalLiters').textContent = totalLiters.toFixed(2);
-      document.getElementById('totalDistanceStat').textContent = totalDistance.toFixed(0);
-      document.getElementById('avgMileage').textContent = avgMileage;
-      document.getElementById('costPerKm').textContent = costPerKm;
-      document.getElementById('currentRange').textContent = currentRange;
-    }
-
-    function updateRecordsList() {
-      const list = document.getElementById('recordsList');
-      list.innerHTML = '';
-      records.forEach((r,i)=>{
-        const div = document.createElement('div');
-        div.className = 'record';
-        div.innerHTML = `${r.date} - ${r.distance} km - ${r.fuel} L - ₹${r.cost}
-          <span>
-            <button onclick="editEntry(${i})">✏️ Edit</button>
-            <button onclick="deleteEntry(${i})">🗑️ Delete</button>
-          </span>`;
-        list.appendChild(div);
-      });
-    }
-
-    function updateMonthlySummary() {
-      const summaryDiv = document.getElementById('monthlySummary');
-      summaryDiv.innerHTML = '';
-      const grouped = {};
-      records.forEach(r=>{
-        const month = r.date.slice(0,7);
-        if (!grouped[month]) grouped[month] = {distance:0,fuel:0,cost:0};
-        grouped[month].distance += r.distance;
-        grouped[month].fuel += r.fuel;
-        grouped[month].cost += r.cost;
-      });
-      for (const [month,data] of Object.entries(grouped)) {
-        const mileage = data.fuel>0 ? (data.distance/data.fuel).toFixed(2):0;
-        const div = document.createElement('div');
-        div.className='record';
-        div.textContent = `${month}: ${data.distance} km, ${data.fuel.toFixed(2)} L, ₹${data.cost.toFixed(2)}, Avg Mileage: ${mileage} km/L`;
-        summaryDiv.appendChild(div);
-      }
+    function deleteEntry(i) {
+      if (!confirm('Delete this entry?')) return;
+      records.splice(i,1);
+      render();
+      showToast('🗑️ Entry Deleted');
     }
 
     function exportCSV() {
-      let csv = "Date,Start,End,Distance,Fuel,Cost,Efficiency,Notes\n";
-      records.forEach(r=>{
-        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuel},${r.cost},${r.efficiency},"${r.notes}"\n`;
+      let csv = 'Date,Distance,Fuel,Cost,Efficiency\\n';
+      records.forEach(r => {
+        csv += `${r.date},${r.distance},${r.fuel},${r.cost},${r.efficiency}\\n`;
       });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'fuel_records.csv';
-      a.click();
-      URL.revokeObjectURL(url);
+      const blob = new Blob([csv], {type:'text/csv'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'fuel_records.csv';
+      link.click();
     }
 
-    function clearAllData() {
-      if(confirm("Are you sure you want to clear all data?")){
-        records = [];
-        localStorage.removeItem('fuelRecords');
-        updateDisplay();
-        showToast('⚠️ All data cleared');
+    function renderMonthlySummaries() {
+      const monthly = {};
+      records.forEach(r => {
+        const month = r.date.slice(0,7);
+        if (!monthly[month]) monthly[month] = {distance:0,fuel:0,cost:0};
+        monthly[month].distance += r.distance;
+        monthly[month].fuel += r.fuel;
+        monthly[month].cost += r.cost;
+      });
+      const summariesDiv = document.getElementById('monthlySummaries');
+      summariesDiv.innerHTML = '';
+      for (const m in monthly) {
+        const s = monthly[m];
+        const avg = s.fuel ? (s.distance/s.fuel).toFixed(2) : 0;
+        const div = document.createElement('div');
+        div.className = 'summary-card';
+        div.innerHTML = `<strong>${m}</strong><br>Dist: ${s.distance} km<br>Fuel: ${s.fuel} L<br>Cost: ₹${s.cost}<br>Mileage: ${avg}`;
+        summariesDiv.appendChild(div);
       }
     }
 
-    setTodayDate();
-    updateDisplay();
+    function toggleSettings() {
+      const p = document.getElementById('settingsPanel');
+      p.style.display = p.style.display==='block' ? 'none' : 'block';
+    }
+
+    function resetApp() {
+      if (!confirm('This will delete ALL records. Continue?')) return;
+      localStorage.clear();
+      records = [];
+      render();
+      showToast('🔄 App Reset');
+    }
+
+    render();
   </script>
 </body>
 </html>
