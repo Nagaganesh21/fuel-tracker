@@ -176,6 +176,7 @@
     <div class="card">
       <h2>Add / Edit Entry</h2>
       <form id="fuelForm" class="form-grid">
+        <div><label>Date</label><input type="date" id="date" required></div>
         <div><label>Meter Start</label><input type="number" id="meterStart" step="0.1" required></div>
         <div><label>Meter End</label><input type="number" id="meterEnd" step="0.1" required></div>
         <div><label>Distance</label><input type="number" id="distance" step="0.1" readonly></div>
@@ -241,10 +242,11 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('date')?.remove(); // remove hidden date if any
       migrateRecords();
       renderRecords(); renderSummaries();
       document.getElementById('bikeMileage').value = BIKE_MILEAGE;
+      // Set today's date by default
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
     });
 
     document.getElementById('meterEnd').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
@@ -276,12 +278,14 @@
       let cost = roundN(document.getElementById('cost').value, 2);
       let remainingKm = roundN(document.getElementById('remainingKm').value, 1);
 
-      let date = new Date().toISOString().split('T')[0];
+      let date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
       let record = {date, start, end, distance, fuel, cost, remainingKm};
       if(editIndex >= 0){ records[editIndex] = record; editIndex = -1; }
       else { records.push(record); }
       localStorage.setItem('fuelRecords', JSON.stringify(records));
       showToast(); e.target.reset();
+      // reset today's date again
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
       renderRecords(); renderSummaries();
     });
 
@@ -338,6 +342,7 @@
 
     function editRecord(i){
       let r = records[i];
+      document.getElementById('date').value = r.date || new Date().toISOString().split('T')[0];
       document.getElementById('meterStart').value = num(r.start).toFixed(1);
       document.getElementById('meterEnd').value = num(r.end).toFixed(1);
       document.getElementById('distance').value = num(r.distance).toFixed(1);
