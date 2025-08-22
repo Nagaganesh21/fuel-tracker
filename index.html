@@ -153,6 +153,9 @@
         <label>Cost (₹)</label>
         <input type="number" id="cost" step="0.01" required>
 
+        <label>Remaining KM</label>
+        <input type="number" id="remainingKm" step="0.1" readonly>
+
         <button type="submit">Save Entry</button>
       </form>
     </div>
@@ -169,6 +172,7 @@
             <th>Distance</th>
             <th>Fuel</th>
             <th>Cost</th>
+            <th>Remaining KM</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -185,6 +189,7 @@
   <div id="toast" class="toast">✅ Saved successfully</div>
 
   <script>
+    const BIKE_MILEAGE = 40; // km per liter
     let records = JSON.parse(localStorage.getItem('fuelRecords')) || [];
     let editIndex = -1;
 
@@ -194,14 +199,23 @@
       renderSummaries();
     });
 
-    document.getElementById('meterEnd').addEventListener('input', calcDistance);
-    document.getElementById('meterStart').addEventListener('input', calcDistance);
+    document.getElementById('meterEnd').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
+    document.getElementById('meterStart').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
+    document.getElementById('fuel').addEventListener('input', calcRemainingKm);
 
     function calcDistance() {
       let start = parseFloat(document.getElementById('meterStart').value) || 0;
       let end = parseFloat(document.getElementById('meterEnd').value) || 0;
       let dist = end - start;
       document.getElementById('distance').value = dist > 0 ? (dist).toFixed(1) : 0;
+    }
+
+    function calcRemainingKm() {
+      let distance = parseFloat(document.getElementById('distance').value) || 0;
+      let fuel = parseFloat(document.getElementById('fuel').value) || 0;
+      let possible_km = fuel * BIKE_MILEAGE;
+      let remaining_km = possible_km - distance;
+      document.getElementById('remainingKm').value = remaining_km > 0 ? remaining_km.toFixed(1) : 0;
     }
 
     document.getElementById('fuelForm').addEventListener('submit', e => {
@@ -216,8 +230,9 @@
       let distance = Number((end - start).toFixed(1));
       let fuel = Number(parseFloat(document.getElementById('fuel').value).toFixed(1));
       let cost = Number(parseFloat(document.getElementById('cost').value).toFixed(2));
+      let remainingKm = Number(document.getElementById('remainingKm').value);
 
-      let record = {date, start, end, distance, fuel, cost};
+      let record = {date, start, end, distance, fuel, cost, remainingKm};
 
       if(editIndex >= 0){
         records[editIndex] = record;
@@ -244,6 +259,7 @@
           <td>${r.distance.toFixed(1)}</td>
           <td>${r.fuel.toFixed(1)}</td>
           <td>₹${r.cost.toFixed(2)}</td>
+          <td>${r.remainingKm.toFixed(1)}</td>
           <td>
             <button onclick="editRecord(${i})">Edit</button>
             <button onclick="deleteRecord(${i})" style="background:#e63946">Delete</button>
@@ -259,10 +275,11 @@
       let grouped = {};
       records.forEach(r => {
         let month = r.date.substring(0,7);
-        if(!grouped[month]) grouped[month] = {distance:0,fuel:0,cost:0};
+        if(!grouped[month]) grouped[month] = {distance:0,fuel:0,cost:0,remaining:0};
         grouped[month].distance += r.distance;
         grouped[month].fuel += r.fuel;
         grouped[month].cost += r.cost;
+        grouped[month].remaining += r.remainingKm;
       });
       for(let m in grouped){
         let avgMileage = (grouped[m].distance / grouped[m].fuel).toFixed(2);
@@ -270,7 +287,8 @@
           ${grouped[m].distance.toFixed(1)} km, 
           ${grouped[m].fuel.toFixed(1)} L, 
           ₹${grouped[m].cost.toFixed(2)}, 
-          Mileage: ${avgMileage} km/L</p>`;
+          Mileage: ${avgMileage} km/L, 
+          Remaining: ${grouped[m].remaining.toFixed(1)} km</p>`;
       }
     }
 
@@ -282,6 +300,7 @@
       document.getElementById('distance').value = r.distance;
       document.getElementById('fuel').value = r.fuel;
       document.getElementById('cost').value = r.cost;
+      document.getElementById('remainingKm').value = r.remainingKm;
       editIndex = i;
     }
 
@@ -295,9 +314,9 @@
     }
 
     function exportCSV(){
-      let csv = 'Date,Start,End,Distance,Fuel,Cost\n';
+      let csv = 'Date,Start,End,Distance,Fuel,Cost,Remaining KM\n';
       records.forEach(r => {
-        csv += `${r.date},${r.start.toFixed(1)},${r.end.toFixed(1)},${r.distance.toFixed(1)},${r.fuel.toFixed(1)},${r.cost.toFixed(2)}\n`;
+        csv += `${r.date},${r.start.toFixed(1)},${r.end.toFixed(1)},${r.distance.toFixed(1)},${r.fuel.toFixed(1)},${r.cost.toFixed(2)},${r.remainingKm.toFixed(1)}\n`;
       });
       let blob = new Blob([csv], { type: 'text/csv' });
       let link = document.createElement('a');
