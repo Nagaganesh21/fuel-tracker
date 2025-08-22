@@ -10,125 +10,112 @@
       background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
       margin: 0;
       padding: 0;
+      color: #333;
     }
     header {
-      background: rgba(0, 0, 0, 0.7);
-      color: #fff;
       text-align: center;
-      padding: 1rem;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .container {
-      max-width: 900px;
-      margin: 2rem auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      padding: 2rem;
+    h1 {
+      margin: 0;
+      font-size: 2rem;
     }
-    h2 {
-      margin-top: 0;
-    }
-    form input, form button {
-      padding: 0.5rem;
-      margin: 0.5rem 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    form button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    form button:hover {
-      transform: scale(1.05);
-      background: #45a049;
-    }
-    .stats {
+    main {
+      padding: 20px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      max-width: 900px;
+      margin: auto;
     }
     .card {
-      background: #f4f4f9;
+      background: white;
       border-radius: 12px;
-      padding: 1rem;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      animation: fadeIn 0.4s ease;
     }
-    .records ul {
-      list-style: none;
-      padding: 0;
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
     }
-    .records li {
-      background: #fafafa;
-      margin: 0.5rem 0;
-      padding: 0.7rem;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      opacity: 0;
-      transform: translateY(10px);
-      animation: fadeSlideIn 0.5s forwards;
-    }
-    @keyframes fadeSlideIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .btn-small {
-      padding: 0.3rem 0.6rem;
-      margin-left: 0.5rem;
-      border: none;
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
       border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
+      border: 1px solid #ccc;
     }
-    .btn-edit { background: #2196F3; color: #fff; }
-    .btn-edit:hover { background: #0b7dda; }
-    .btn-delete { background: #f44336; color: #fff; }
-    .btn-delete:hover { background: #da190b; }
-    .btn-export { background: #ff9800; color: #fff; }
-    .btn-export:hover { background: #e68a00; }
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #4caf50;
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .toast.show { opacity: 1; }
-    .settings-panel {
-      margin-top: 2rem;
-      padding: 1rem;
+    input[readonly] {
       background: #f9f9f9;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      border: none;
       border-radius: 8px;
-      display: none;
+      background: #4e54c8;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s;
     }
-    .monthly-summary {
-      margin-top: 2rem;
+    button:hover {
+      transform: scale(1.05);
     }
-    .monthly-summary table {
+    table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 15px;
     }
-    .monthly-summary th, .monthly-summary td {
+    th, td {
       border: 1px solid #ddd;
       padding: 8px;
       text-align: center;
     }
-    .monthly-summary th {
-      background: #eee;
+    th {
+      background: #f0f0f0;
+    }
+    .toast {
+      visibility: hidden;
+      min-width: 200px;
+      margin-left: -100px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 12px;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      bottom: 30px;
+      font-size: 1rem;
+      opacity: 0;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+    .toast.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    .settings {
+      text-align: right;
+      margin: 10px;
+    }
+    .settings-panel {
+      display: none;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin: 10px;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
     }
   </style>
 </head>
@@ -136,185 +123,205 @@
   <header>
     <h1>⛽ Fuel Tracker</h1>
   </header>
-  <div class="container">
-    <h2>Add Entry</h2>
-    <form id="fuelForm">
-      <input type="date" id="date" required>
-      <input type="number" id="distance" placeholder="Distance (km)" required>
-      <input type="number" id="fuel" placeholder="Fuel (liters)" required>
-      <input type="number" id="cost" placeholder="Cost (₹)" required>
-      <input type="number" id="efficiency" placeholder="Preferred Mileage (km/l)" required>
-      <button type="submit">Add Entry</button>
-    </form>
 
-    <div class="stats">
-      <div class="card">
-        <h3>Total Distance</h3>
-        <p id="totalDistanceStat">0 km</p>
-      </div>
-      <div class="card">
-        <h3>Total Fuel</h3>
-        <p id="totalFuel">0 L</p>
-      </div>
-      <div class="card">
-        <h3>Total Cost</h3>
-        <p id="totalCost">₹0</p>
-      </div>
-      <div class="card">
-        <h3>Actual Mileage</h3>
-        <p id="actualMileage">0 km/l</p>
-      </div>
+  <div class="settings">
+    <button onclick="toggleSettings()">⚙️ Settings</button>
+  </div>
+  <div class="settings-panel" id="settingsPanel">
+    <button onclick="resetApp()" style="background:#e63946">Reset App</button>
+  </div>
+
+  <main>
+    <div class="card">
+      <h2>Add / Edit Entry</h2>
+      <form id="fuelForm">
+        <label>Date</label>
+        <input type="date" id="date" required>
+
+        <label>Meter Start</label>
+        <input type="number" id="meterStart" required>
+
+        <label>Meter End</label>
+        <input type="number" id="meterEnd" required>
+
+        <label>Distance</label>
+        <input type="number" id="distance" readonly>
+
+        <label>Fuel (liters)</label>
+        <input type="number" id="fuel" required>
+
+        <label>Cost (₹)</label>
+        <input type="number" id="cost" required>
+
+        <button type="submit">Save Entry</button>
+      </form>
     </div>
 
-    <h2>Records</h2>
-    <div class="records">
-      <ul id="recordList"></ul>
+    <div class="card">
+      <h2>Records</h2>
+      <button onclick="exportCSV()">📥 Export CSV</button>
+      <table id="recordsTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Distance</th>
+            <th>Fuel</th>
+            <th>Cost</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <button class="btn-small btn-export" onclick="exportCSV()">📥 Export CSV</button>
-
-    <div class="monthly-summary">
-      <h2>Monthly Summary</h2>
+    <div class="card">
+      <h2>Monthly Summaries</h2>
       <div id="monthlySummary"></div>
     </div>
+  </main>
 
-    <button onclick="toggleSettings()">⚙️ Settings</button>
-    <div class="settings-panel" id="settingsPanel">
-      <button class="btn-small btn-delete" onclick="resetApp()">Reset App</button>
-    </div>
-  </div>
-  <div class="toast" id="toast">Saved successfully!</div>
+  <div id="toast" class="toast">✅ Saved successfully</div>
 
   <script>
-    let records = JSON.parse(localStorage.getItem('records')) || [];
-    let editingIndex = null;
+    let records = JSON.parse(localStorage.getItem('fuelRecords')) || [];
+    let editIndex = -1;
 
-    document.getElementById('fuelForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      const date = document.getElementById('date').value;
-      const distance = parseFloat(document.getElementById('distance').value);
-      const fuel = parseFloat(document.getElementById('fuel').value);
-      const cost = parseFloat(document.getElementById('cost').value);
-      const efficiency = parseFloat(document.getElementById('efficiency').value);
-
-      const entry = {date, distance, fuel, cost, efficiency};
-
-      if(editingIndex !== null){
-        records[editingIndex] = entry;
-        editingIndex = null;
-        showToast('Entry updated ✅');
-      } else {
-        records.push(entry);
-        showToast('Entry added ✅');
-      }
-
-      localStorage.setItem('records', JSON.stringify(records));
+    document.addEventListener('DOMContentLoaded', () => {
+      // Default today's date
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
       renderRecords();
-      this.reset();
+      renderSummaries();
+    });
+
+    document.getElementById('meterEnd').addEventListener('input', calcDistance);
+    document.getElementById('meterStart').addEventListener('input', calcDistance);
+
+    function calcDistance() {
+      let start = parseFloat(document.getElementById('meterStart').value) || 0;
+      let end = parseFloat(document.getElementById('meterEnd').value) || 0;
+      let dist = end - start;
+      document.getElementById('distance').value = dist > 0 ? dist : 0;
+    }
+
+    document.getElementById('fuelForm').addEventListener('submit', e => {
+      e.preventDefault();
+      let date = document.getElementById('date').value;
+      let start = parseFloat(document.getElementById('meterStart').value);
+      let end = parseFloat(document.getElementById('meterEnd').value);
+      if(end < start){
+        alert('End meter must be greater than start meter');
+        return;
+      }
+      let distance = end - start;
+      let fuel = parseFloat(document.getElementById('fuel').value);
+      let cost = parseFloat(document.getElementById('cost').value);
+
+      let record = {date, start, end, distance, fuel, cost};
+
+      if(editIndex >= 0){
+        records[editIndex] = record;
+        editIndex = -1;
+      } else {
+        records.push(record);
+      }
+      localStorage.setItem('fuelRecords', JSON.stringify(records));
+      showToast();
+      e.target.reset();
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
+      renderRecords();
+      renderSummaries();
     });
 
     function renderRecords(){
-      const list = document.getElementById('recordList');
-      list.innerHTML = '';
-      let totalDist = 0, totalFuel = 0, totalCost = 0;
-
-      records.forEach((r, i) => {
-        totalDist += r.distance;
-        totalFuel += r.fuel;
-        totalCost += r.cost;
-
-        const li = document.createElement('li');
-        li.innerHTML = `${r.date} - ${r.distance} km, ${r.fuel} L, ₹${r.cost}
-          <span>
-            <button class="btn-small btn-edit" onclick="editRecord(${i})">Edit</button>
-            <button class="btn-small btn-delete" onclick="deleteRecord(${i})">Delete</button>
-          </span>`;
-        list.appendChild(li);
+      let tbody = document.querySelector('#recordsTable tbody');
+      tbody.innerHTML = '';
+      records.forEach((r,i) => {
+        let row = `<tr>
+          <td>${r.date}</td>
+          <td>${r.start}</td>
+          <td>${r.end}</td>
+          <td>${r.distance}</td>
+          <td>${r.fuel}</td>
+          <td>${r.cost}</td>
+          <td>
+            <button onclick="editRecord(${i})">Edit</button>
+            <button onclick="deleteRecord(${i})" style="background:#e63946">Delete</button>
+          </td>
+        </tr>`;
+        tbody.innerHTML += row;
       });
+    }
 
-      document.getElementById('totalDistanceStat').innerText = totalDist + ' km';
-      document.getElementById('totalFuel').innerText = totalFuel + ' L';
-      document.getElementById('totalCost').innerText = '₹' + totalCost;
-      document.getElementById('actualMileage').innerText = totalFuel > 0 ? (totalDist/totalFuel).toFixed(2) + ' km/l' : '0 km/l';
-
-      renderMonthlySummary();
+    function renderSummaries(){
+      let summaryDiv = document.getElementById('monthlySummary');
+      summaryDiv.innerHTML = '';
+      let grouped = {};
+      records.forEach(r => {
+        let month = r.date.substring(0,7);
+        if(!grouped[month]) grouped[month] = {distance:0,fuel:0,cost:0};
+        grouped[month].distance += r.distance;
+        grouped[month].fuel += r.fuel;
+        grouped[month].cost += r.cost;
+      });
+      for(let m in grouped){
+        let avgMileage = (grouped[m].distance / grouped[m].fuel).toFixed(2);
+        summaryDiv.innerHTML += `<p><b>${m}</b>: ${grouped[m].distance} km, ${grouped[m].fuel} L, ₹${grouped[m].cost}, Mileage: ${avgMileage} km/L</p>`;
+      }
     }
 
     function editRecord(i){
-      const r = records[i];
+      let r = records[i];
       document.getElementById('date').value = r.date;
+      document.getElementById('meterStart').value = r.start;
+      document.getElementById('meterEnd').value = r.end;
       document.getElementById('distance').value = r.distance;
       document.getElementById('fuel').value = r.fuel;
       document.getElementById('cost').value = r.cost;
-      document.getElementById('efficiency').value = r.efficiency;
-      editingIndex = i;
+      editIndex = i;
     }
 
     function deleteRecord(i){
-      records.splice(i, 1);
-      localStorage.setItem('records', JSON.stringify(records));
-      renderRecords();
-      showToast('Entry deleted 🗑️');
+      if(confirm('Delete this record?')){
+        records.splice(i,1);
+        localStorage.setItem('fuelRecords', JSON.stringify(records));
+        renderRecords();
+        renderSummaries();
+      }
     }
 
     function exportCSV(){
-      let csv = 'Date,Distance,Fuel,Cost,Efficiency\\n';
+      let csv = 'Date,Start,End,Distance,Fuel,Cost\n';
       records.forEach(r => {
-        csv += `${r.date},${r.distance},${r.fuel},${r.cost},${r.efficiency}\\n`;
+        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuel},${r.cost}\n`;
       });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'fuel_records.csv';
-      a.click();
-      URL.revokeObjectURL(url);
+      let blob = new Blob([csv], { type: 'text/csv' });
+      let link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'fuel-records.csv';
+      link.click();
     }
 
-    function renderMonthlySummary(){
-      const summaryDiv = document.getElementById('monthlySummary');
-      summaryDiv.innerHTML = '';
-      const summary = {};
-
-      records.forEach(r => {
-        const month = r.date.slice(0,7);
-        if(!summary[month]) summary[month] = {dist:0,fuel:0,cost:0};
-        summary[month].dist += r.distance;
-        summary[month].fuel += r.fuel;
-        summary[month].cost += r.cost;
-      });
-
-      let html = '<table><tr><th>Month</th><th>Total Distance</th><th>Total Fuel</th><th>Total Cost</th><th>Avg Mileage</th></tr>';
-      for(const m in summary){
-        const s = summary[m];
-        html += `<tr><td>${m}</td><td>${s.dist}</td><td>${s.fuel}</td><td>₹${s.cost}</td><td>${(s.dist/s.fuel).toFixed(2)} km/l</td></tr>`;
-      }
-      html += '</table>';
-      summaryDiv.innerHTML = html;
-    }
-
-    function showToast(msg){
-      const toast = document.getElementById('toast');
-      toast.innerText = msg;
-      toast.classList.add('show');
-      setTimeout(()=>toast.classList.remove('show'),2000);
+    function showToast(){
+      let toast = document.getElementById('toast');
+      toast.className = 'toast show';
+      setTimeout(() => toast.className = 'toast', 2000);
     }
 
     function toggleSettings(){
-      const panel = document.getElementById('settingsPanel');
-      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+      let p = document.getElementById('settingsPanel');
+      p.style.display = p.style.display === 'block' ? 'none':'block';
     }
 
     function resetApp(){
-      if(confirm('Are you sure you want to reset the app? This will delete all records.')){
+      if(confirm('This will delete ALL records. Continue?')){
         records = [];
-        localStorage.removeItem('records');
+        localStorage.removeItem('fuelRecords');
         renderRecords();
-        showToast('App reset 🗑️');
+        renderSummaries();
       }
     }
-
-    renderRecords();
   </script>
 </body>
 </html>
