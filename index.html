@@ -142,8 +142,7 @@
         <input type="number" id="meterStart" step="0.1" required>
 
         <label>Meter End</label>
-        <input type="number" id="meterEnd" step="0.1" required>      
-
+        <input type="number" id="meterEnd" step="0.1" required>
 
         <label>Distance</label>
         <input type="number" id="distance" step="0.1" readonly>
@@ -203,7 +202,7 @@
       let start = parseFloat(document.getElementById('meterStart').value) || 0;
       let end = parseFloat(document.getElementById('meterEnd').value) || 0;
       let dist = end - start;
-      document.getElementById('distance').value = dist > 0 ? dist : 0;
+      document.getElementById('distance').value = dist > 0 ? dist.toFixed(1) : 0;
     }
 
     document.getElementById('fuelForm').addEventListener('submit', e => {
@@ -215,7 +214,7 @@
         alert('End meter must be greater than start meter');
         return;
       }
-      let distance = end - start;
+      let distance = parseFloat((end - start).toFixed(1));
       let fuel = parseFloat(document.getElementById('fuel').value);
       let cost = parseFloat(document.getElementById('cost').value);
 
@@ -241,11 +240,11 @@
       records.forEach((r,i) => {
         let row = `<tr>
           <td>${r.date}</td>
-          <td>${r.start}</td>
-          <td>${r.end}</td>
-          <td>${r.distance}</td>
-          <td>${r.fuel}</td>
-          <td>${r.cost}</td>
+          <td>${r.start.toFixed(1)}</td>
+          <td>${r.end.toFixed(1)}</td>
+          <td>${r.distance.toFixed(1)}</td>
+          <td>${r.fuel.toFixed(1)}</td>
+          <td>₹${r.cost.toFixed(2)}</td>
           <td>
             <button onclick="editRecord(${i})">Edit</button>
             <button onclick="deleteRecord(${i})" style="background:#e63946">Delete</button>
@@ -268,7 +267,11 @@
       });
       for(let m in grouped){
         let avgMileage = (grouped[m].distance / grouped[m].fuel).toFixed(2);
-        summaryDiv.innerHTML += `<p><b>${m}</b>: ${grouped[m].distance} km, ${grouped[m].fuel} L, ₹${grouped[m].cost}, Mileage: ${avgMileage} km/L</p>`;
+        summaryDiv.innerHTML += `<p><b>${m}</b>: 
+          ${grouped[m].distance.toFixed(1)} km, 
+          ${grouped[m].fuel.toFixed(1)} L, 
+          ₹${grouped[m].cost.toFixed(2)}, 
+          Mileage: ${avgMileage} km/L</p>`;
       }
     }
 
@@ -295,7 +298,7 @@
     function exportCSV(){
       let csv = 'Date,Start,End,Distance,Fuel,Cost\n';
       records.forEach(r => {
-        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuel},${r.cost}\n`;
+        csv += `${r.date},${r.start.toFixed(1)},${r.end.toFixed(1)},${r.distance.toFixed(1)},${r.fuel.toFixed(1)},${r.cost.toFixed(2)}\n`;
       });
       let blob = new Blob([csv], { type: 'text/csv' });
       let link = document.createElement('a');
