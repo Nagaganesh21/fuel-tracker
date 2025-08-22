@@ -148,10 +148,10 @@
         <input type="number" id="distance" step="0.1" readonly>
 
         <label>Fuel (liters)</label>
-        <input type="number" id="fuel" required>
+        <input type="number" id="fuel" step="0.1" required>
 
         <label>Cost (₹)</label>
-        <input type="number" id="cost" required>
+        <input type="number" id="cost" step="0.01" required>
 
         <button type="submit">Save Entry</button>
       </form>
@@ -189,7 +189,6 @@
     let editIndex = -1;
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Default today's date
       document.getElementById('date').value = new Date().toISOString().split('T')[0];
       renderRecords();
       renderSummaries();
@@ -202,21 +201,21 @@
       let start = parseFloat(document.getElementById('meterStart').value) || 0;
       let end = parseFloat(document.getElementById('meterEnd').value) || 0;
       let dist = end - start;
-      document.getElementById('distance').value = dist > 0 ? dist.toFixed(1) : 0;
+      document.getElementById('distance').value = dist > 0 ? (dist).toFixed(1) : 0;
     }
 
     document.getElementById('fuelForm').addEventListener('submit', e => {
       e.preventDefault();
       let date = document.getElementById('date').value;
-      let start = parseFloat(document.getElementById('meterStart').value);
-      let end = parseFloat(document.getElementById('meterEnd').value);
+      let start = Number(parseFloat(document.getElementById('meterStart').value).toFixed(1));
+      let end = Number(parseFloat(document.getElementById('meterEnd').value).toFixed(1));
       if(end < start){
         alert('End meter must be greater than start meter');
         return;
       }
-      let distance = parseFloat((end - start).toFixed(1));
-      let fuel = parseFloat(document.getElementById('fuel').value);
-      let cost = parseFloat(document.getElementById('cost').value);
+      let distance = Number((end - start).toFixed(1));
+      let fuel = Number(parseFloat(document.getElementById('fuel').value).toFixed(1));
+      let cost = Number(parseFloat(document.getElementById('cost').value).toFixed(2));
 
       let record = {date, start, end, distance, fuel, cost};
 
