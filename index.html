@@ -1,318 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fuel Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
       margin: 0;
-      background: linear-gradient(to right, #4facfe, #00f2fe);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #333;
+      padding: 0;
     }
     header {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      padding: 1rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
       text-align: center;
-      color: white;
-      font-size: 1.5rem;
-      font-weight: bold;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      padding: 1rem;
     }
     .container {
-      width: 95%;
       max-width: 900px;
-      margin-top: 1.5rem;
-    }
-    .card {
-      background: white;
-      border-radius: 15px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-3px);
+      margin: 2rem auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      padding: 2rem;
     }
     h2 {
       margin-top: 0;
     }
-    label {
-      display: block;
-      margin: 0.5rem 0 0.2rem;
-      font-weight: bold;
-    }
-    input, button {
+    form input, form button {
       padding: 0.5rem;
-      border: 1px solid #ddd;
+      margin: 0.5rem 0;
       border-radius: 8px;
-      width: 100%;
-      margin-bottom: 1rem;
-      font-size: 1rem;
+      border: 1px solid #ccc;
     }
-    button {
-      background: #4facfe;
+    form button {
+      background: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
-      transition: transform 0.2s ease, background 0.2s ease;
+      transition: transform 0.2s ease;
     }
-    button:hover {
-      background: #00c6ff;
+    form button:hover {
       transform: scale(1.05);
+      background: #45a049;
     }
-    .stats, .monthly-summary {
+    .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1rem;
+      margin-top: 1rem;
     }
-    .stat-card, .summary-card {
-      background: #f7f9fc;
+    .card {
+      background: #f4f4f9;
       border-radius: 12px;
       padding: 1rem;
       text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
-    .record {
+    .records ul {
+      list-style: none;
+      padding: 0;
+    }
+    .records li {
+      background: #fafafa;
+      margin: 0.5rem 0;
+      padding: 0.7rem;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.8rem;
-      border-bottom: 1px solid #eee;
-      animation: fadeIn 0.5s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeSlideIn 0.5s forwards;
     }
-    .record:nth-child(odd) {background: #fafafa;}
-    .record-actions button {
+    @keyframes fadeSlideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .btn-small {
+      padding: 0.3rem 0.6rem;
       margin-left: 0.5rem;
-      width: auto;
-      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
-    #toast {
+    .btn-edit { background: #2196F3; color: #fff; }
+    .btn-edit:hover { background: #0b7dda; }
+    .btn-delete { background: #f44336; color: #fff; }
+    .btn-delete:hover { background: #da190b; }
+    .btn-export { background: #ff9800; color: #fff; }
+    .btn-export:hover { background: #e68a00; }
+    .toast {
       position: fixed;
       bottom: 20px;
       right: 20px;
       background: #4caf50;
       color: white;
-      padding: 0.8rem 1.2rem;
+      padding: 1rem 1.5rem;
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       opacity: 0;
-      pointer-events: none;
       transition: opacity 0.5s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
-    #toast.show {opacity: 1;}
-    @keyframes fadeIn {
-      from {opacity:0; transform: translateY(10px);}
-      to {opacity:1; transform: translateY(0);}
-    }
-    .settings {
+    .toast.show { opacity: 1; }
+    .settings-panel {
       margin-top: 2rem;
+      padding: 1rem;
+      background: #f9f9f9;
+      border-radius: 8px;
+      display: none;
+    }
+    .monthly-summary {
+      margin-top: 2rem;
+    }
+    .monthly-summary table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .monthly-summary th, .monthly-summary td {
+      border: 1px solid #ddd;
+      padding: 8px;
       text-align: center;
     }
-    .settings-panel {
-      display: none;
-      margin-top: 1rem;
-    }
-    .settings-panel button {
-      background: #e74c3c;
+    .monthly-summary th {
+      background: #eee;
     }
   </style>
 </head>
 <body>
-  <header>⛽ Fuel Tracker</header>
+  <header>
+    <h1>⛽ Fuel Tracker</h1>
+  </header>
   <div class="container">
-    <div class="card">
-      <h2>Add / Edit Entry</h2>
-      <label>Date:</label>
-      <input type="date" id="date">
-      <label>Distance (km):</label>
-      <input type="number" id="distance">
-      <label>Fuel (liters):</label>
-      <input type="number" id="fuel">
-      <label>Cost:</label>
-      <input type="number" id="cost">
-      <label>Efficiency (km/l):</label>
-      <input type="number" id="efficiency">
-      <button onclick="addOrUpdateEntry()" id="addBtn">Add Entry</button>
-    </div>
+    <h2>Add Entry</h2>
+    <form id="fuelForm">
+      <input type="date" id="date" required>
+      <input type="number" id="distance" placeholder="Distance (km)" required>
+      <input type="number" id="fuel" placeholder="Fuel (liters)" required>
+      <input type="number" id="cost" placeholder="Cost (₹)" required>
+      <input type="number" id="efficiency" placeholder="Preferred Mileage (km/l)" required>
+      <button type="submit">Add Entry</button>
+    </form>
 
-    <div class="card">
-      <h2>Stats</h2>
-      <div class="stats">
-        <div class="stat-card"><strong>Total Distance</strong><div id="totalDistanceStat">0</div></div>
-        <div class="stat-card"><strong>Total Fuel</strong><div id="totalFuel">0</div></div>
-        <div class="stat-card"><strong>Total Cost</strong><div id="totalCost">0</div></div>
-        <div class="stat-card"><strong>Actual Mileage</strong><div id="mileage">0</div></div>
+    <div class="stats">
+      <div class="card">
+        <h3>Total Distance</h3>
+        <p id="totalDistanceStat">0 km</p>
       </div>
-      <button onclick="exportCSV()">📥 Export CSV</button>
-    </div>
-
-    <div class="card">
-      <h2>Records</h2>
-      <div id="records"></div>
-    </div>
-
-    <div class="card">
-      <h2>Monthly Summaries</h2>
-      <div id="monthlySummaries" class="monthly-summary"></div>
-    </div>
-
-    <div class="settings">
-      <button onclick="toggleSettings()">⚙️ Settings</button>
-      <div id="settingsPanel" class="settings-panel">
-        <button onclick="resetApp()">Reset App</button>
+      <div class="card">
+        <h3>Total Fuel</h3>
+        <p id="totalFuel">0 L</p>
       </div>
+      <div class="card">
+        <h3>Total Cost</h3>
+        <p id="totalCost">₹0</p>
+      </div>
+      <div class="card">
+        <h3>Actual Mileage</h3>
+        <p id="actualMileage">0 km/l</p>
+      </div>
+    </div>
+
+    <h2>Records</h2>
+    <div class="records">
+      <ul id="recordList"></ul>
+    </div>
+
+    <button class="btn-small btn-export" onclick="exportCSV()">📥 Export CSV</button>
+
+    <div class="monthly-summary">
+      <h2>Monthly Summary</h2>
+      <div id="monthlySummary"></div>
+    </div>
+
+    <button onclick="toggleSettings()">⚙️ Settings</button>
+    <div class="settings-panel" id="settingsPanel">
+      <button class="btn-small btn-delete" onclick="resetApp()">Reset App</button>
     </div>
   </div>
-
-  <div id="toast">✅ Saved Successfully!</div>
+  <div class="toast" id="toast">Saved successfully!</div>
 
   <script>
     let records = JSON.parse(localStorage.getItem('records')) || [];
-    let editIndex = null;
-    document.getElementById('efficiency').value = localStorage.getItem('efficiency') || 40;
+    let editingIndex = null;
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
-
-    function render() {
-      const recordsDiv = document.getElementById('records');
-      recordsDiv.innerHTML = '';
-      let totalDistance = 0, totalFuel = 0, totalCost = 0;
-
-      records.forEach((r, i) => {
-        totalDistance += r.distance;
-        totalFuel += r.fuel;
-        totalCost += r.cost;
-
-        const div = document.createElement('div');
-        div.className = 'record';
-        div.innerHTML = `
-          <div>${r.date} - ${r.distance} km, ${r.fuel} L, ₹${r.cost}, Eff: ${r.efficiency} km/l</div>
-          <div class="record-actions">
-            <button onclick="editEntry(${i})">Edit</button>
-            <button onclick="deleteEntry(${i})">Delete</button>
-          </div>`;
-        recordsDiv.appendChild(div);
-      });
-
-      document.getElementById('totalDistanceStat').innerText = totalDistance;
-      document.getElementById('totalFuel').innerText = totalFuel;
-      document.getElementById('totalCost').innerText = totalCost;
-      document.getElementById('mileage').innerText = totalFuel ? (totalDistance/totalFuel).toFixed(2) : 0;
-
-      renderMonthlySummaries();
-      localStorage.setItem('records', JSON.stringify(records));
-    }
-
-    function addOrUpdateEntry() {
+    document.getElementById('fuelForm').addEventListener('submit', function(e){
+      e.preventDefault();
       const date = document.getElementById('date').value;
       const distance = parseFloat(document.getElementById('distance').value);
       const fuel = parseFloat(document.getElementById('fuel').value);
       const cost = parseFloat(document.getElementById('cost').value);
       const efficiency = parseFloat(document.getElementById('efficiency').value);
 
-      if (!date || isNaN(distance) || isNaN(fuel) || isNaN(cost)) return alert('Fill all fields');
-
       const entry = {date, distance, fuel, cost, efficiency};
 
-      if (editIndex !== null) {
-        records[editIndex] = entry;
-        editIndex = null;
-        document.getElementById('addBtn').innerText = 'Add Entry';
-        showToast('✅ Entry Updated!');
+      if(editingIndex !== null){
+        records[editingIndex] = entry;
+        editingIndex = null;
+        showToast('Entry updated ✅');
       } else {
         records.push(entry);
-        showToast('✅ Entry Added!');
+        showToast('Entry added ✅');
       }
 
-      localStorage.setItem('efficiency', efficiency);
+      localStorage.setItem('records', JSON.stringify(records));
+      renderRecords();
+      this.reset();
+    });
 
-      document.getElementById('date').value = '';
-      document.getElementById('distance').value = '';
-      document.getElementById('fuel').value = '';
-      document.getElementById('cost').value = '';
+    function renderRecords(){
+      const list = document.getElementById('recordList');
+      list.innerHTML = '';
+      let totalDist = 0, totalFuel = 0, totalCost = 0;
 
-      render();
+      records.forEach((r, i) => {
+        totalDist += r.distance;
+        totalFuel += r.fuel;
+        totalCost += r.cost;
+
+        const li = document.createElement('li');
+        li.innerHTML = `${r.date} - ${r.distance} km, ${r.fuel} L, ₹${r.cost}
+          <span>
+            <button class="btn-small btn-edit" onclick="editRecord(${i})">Edit</button>
+            <button class="btn-small btn-delete" onclick="deleteRecord(${i})">Delete</button>
+          </span>`;
+        list.appendChild(li);
+      });
+
+      document.getElementById('totalDistanceStat').innerText = totalDist + ' km';
+      document.getElementById('totalFuel').innerText = totalFuel + ' L';
+      document.getElementById('totalCost').innerText = '₹' + totalCost;
+      document.getElementById('actualMileage').innerText = totalFuel > 0 ? (totalDist/totalFuel).toFixed(2) + ' km/l' : '0 km/l';
+
+      renderMonthlySummary();
     }
 
-    function editEntry(i) {
+    function editRecord(i){
       const r = records[i];
       document.getElementById('date').value = r.date;
       document.getElementById('distance').value = r.distance;
       document.getElementById('fuel').value = r.fuel;
       document.getElementById('cost').value = r.cost;
       document.getElementById('efficiency').value = r.efficiency;
-      editIndex = i;
-      document.getElementById('addBtn').innerText = 'Update Entry';
+      editingIndex = i;
     }
 
-    function deleteEntry(i) {
-      if (!confirm('Delete this entry?')) return;
-      records.splice(i,1);
-      render();
-      showToast('🗑️ Entry Deleted');
+    function deleteRecord(i){
+      records.splice(i, 1);
+      localStorage.setItem('records', JSON.stringify(records));
+      renderRecords();
+      showToast('Entry deleted 🗑️');
     }
 
-    function exportCSV() {
+    function exportCSV(){
       let csv = 'Date,Distance,Fuel,Cost,Efficiency\\n';
       records.forEach(r => {
         csv += `${r.date},${r.distance},${r.fuel},${r.cost},${r.efficiency}\\n`;
       });
-      const blob = new Blob([csv], {type:'text/csv'});
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'fuel_records.csv';
-      link.click();
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fuel_records.csv';
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
-    function renderMonthlySummaries() {
-      const monthly = {};
+    function renderMonthlySummary(){
+      const summaryDiv = document.getElementById('monthlySummary');
+      summaryDiv.innerHTML = '';
+      const summary = {};
+
       records.forEach(r => {
         const month = r.date.slice(0,7);
-        if (!monthly[month]) monthly[month] = {distance:0,fuel:0,cost:0};
-        monthly[month].distance += r.distance;
-        monthly[month].fuel += r.fuel;
-        monthly[month].cost += r.cost;
+        if(!summary[month]) summary[month] = {dist:0,fuel:0,cost:0};
+        summary[month].dist += r.distance;
+        summary[month].fuel += r.fuel;
+        summary[month].cost += r.cost;
       });
-      const summariesDiv = document.getElementById('monthlySummaries');
-      summariesDiv.innerHTML = '';
-      for (const m in monthly) {
-        const s = monthly[m];
-        const avg = s.fuel ? (s.distance/s.fuel).toFixed(2) : 0;
-        const div = document.createElement('div');
-        div.className = 'summary-card';
-        div.innerHTML = `<strong>${m}</strong><br>Dist: ${s.distance} km<br>Fuel: ${s.fuel} L<br>Cost: ₹${s.cost}<br>Mileage: ${avg}`;
-        summariesDiv.appendChild(div);
+
+      let html = '<table><tr><th>Month</th><th>Total Distance</th><th>Total Fuel</th><th>Total Cost</th><th>Avg Mileage</th></tr>';
+      for(const m in summary){
+        const s = summary[m];
+        html += `<tr><td>${m}</td><td>${s.dist}</td><td>${s.fuel}</td><td>₹${s.cost}</td><td>${(s.dist/s.fuel).toFixed(2)} km/l</td></tr>`;
+      }
+      html += '</table>';
+      summaryDiv.innerHTML = html;
+    }
+
+    function showToast(msg){
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(()=>toast.classList.remove('show'),2000);
+    }
+
+    function toggleSettings(){
+      const panel = document.getElementById('settingsPanel');
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function resetApp(){
+      if(confirm('Are you sure you want to reset the app? This will delete all records.')){
+        records = [];
+        localStorage.removeItem('records');
+        renderRecords();
+        showToast('App reset 🗑️');
       }
     }
 
-    function toggleSettings() {
-      const p = document.getElementById('settingsPanel');
-      p.style.display = p.style.display==='block' ? 'none' : 'block';
-    }
-
-    function resetApp() {
-      if (!confirm('This will delete ALL records. Continue?')) return;
-      localStorage.clear();
-      records = [];
-      render();
-      showToast('🔄 App Reset');
-    }
-
-    render();
+    renderRecords();
   </script>
 </body>
 </html>
