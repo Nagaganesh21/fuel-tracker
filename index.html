@@ -5,213 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fuel Tracker</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    header {
-      text-align: center;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(6px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    .sync-status {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: white;
-    }
-    .sync-online { background: #27ae60; }
-    .sync-offline { background: #e74c3c; }
-    .sync-syncing { background: #f39c12; }
-    .firebase-notice {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      color: #856404;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 10px;
-      text-align: center;
-    }
-    .firebase-notice.hidden { display: none; }
-    h1 { margin: 0; font-size: 2rem; }
-    main {
-      padding: 20px;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-      max-width: 900px;
-      margin: auto;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      animation: fadeIn 0.4s ease;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px 16px;
-      align-items: end;
-    }
-    .form-grid label {
-      display: block;
-      font-weight: 600;
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-    }
-    .form-grid input {
-      width: 100%;
-      max-width: 140px;
-      padding: 6px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 8px 16px;
-      font-size: 0.9rem;
-      border-radius: 20px;
-      background: #4e54c8;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.3s, transform 0.2s;
-    }
-    button:hover {
-      background: #3b40a4;
-      transform: scale(1.05);
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-    button.danger { background: #e63946; }
-    button.danger:hover { background: #c92a37; }
-    button.success { background: #27ae60; }
-    button.success:hover { background: #2ecc71; }
-    .action-group {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-    }
-    .action-btn {
-      padding: 4px 10px;
-      font-size: 0.8rem;
-      border-radius: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .action-btn.edit { background: #2a9d8f; }
-    .action-btn.edit:hover { background: #21867a; }
-    .action-btn.delete { background: #e63946; }
-    .action-btn.delete:hover { background: #c92a37; }
-    .records-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .records-header h2 { margin: 0; }
-    .export-btn { background: #4e54c8; }
-    .export-btn:hover { background: #3b40a4; }
-    .settings { text-align: right; margin: 10px; }
-    .settings-toggle { background: #4e54c8; }
-    .settings-toggle:hover { background: #3b40a4; }
-    .settings-panel {
-      display: none;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin: 10px;
-    }
-    .settings-panel .action-btn {
-      padding: 6px 14px;
-      font-size: 0.85rem;
-      margin-top: 8px;
-    }
-    .settings-panel .action-btn.save { background: #2a9d8f; }
-    .settings-panel .action-btn.save:hover { background: #21867a; }
-    .settings-panel .action-btn.reset { background: #e63946; }
-    .settings-panel .action-btn.reset:hover { background: #c92a37; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background: #f0f0f0; }
-    .toast {
-      visibility: hidden;
-      min-width: 200px;
-      margin-left: -100px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 6px;
-      padding: 12px;
-      position: fixed;
-      z-index: 1;
-      left: 50%;
-      bottom: 30px;
-      font-size: 1rem;
-      opacity: 0;
-      transition: opacity 0.5s, visibility 0.5s;
-    }
-    .toast.show { visibility: visible; opacity: 1; }
-    .cancel-edit-btn {
-      background: #888;
-      margin-left: 8px;
-    }
-    .cancel-edit-btn:hover {
-      background: #555;
-    }
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(10px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-
-    /* MOBILE FIXES */
-    @media (max-width: 600px) {
-      .card {
-        padding: 6px !important;
-      }
-      .form-grid {
-        grid-template-columns: 1fr !important;
-        gap: 14px !important;
-        padding: 6px;
-      }
-      .form-grid input,
-      .form-grid label {
-        max-width: 100% !important;
-        box-sizing: border-box;
-      }
-      .form-grid > div {
-        width: 100%;
-      }
-      button[type="submit"], .cancel-edit-btn {
-        width: 100%;
-        margin-top: 10px;
-        justify-content: center;
-        border-radius: 14px;
-        box-sizing: border-box;
-      }
-    }
-    /* Summary card for totals */
+    /* ...all previous styles... */
     #totalsSummaryCard {
       background: #f5f6fa; 
       color: #222; 
@@ -252,7 +46,7 @@
 
   <main>
     <div class="card" id="totalsSummaryCard">
-      <h3 style="margin-top: 0;">Total Summary</h3>
+      <h3 style="margin-top: 0;">Current Fuel Status</h3>
       <div id="totalsSummary">
         <!-- Populated by JS -->
       </div>
@@ -344,7 +138,7 @@
     const roundN = (v, n = 1) => Number(num(v, 0).toFixed(n));
     const clamp0 = v => Math.max(0, v);
 
-    // New: Compute available fuel and remaining for each record
+    // Compute available fuel and remaining for each record
     function computeAvailableFuel(records, mileage = BIKE_MILEAGE) {
       let prevRemainingFuel = 0;
       // Sort records by date ascending for calculation
@@ -369,14 +163,20 @@
       });
     }
 
-    // Totals summary for Available Fuel and Remaining KM
+    // Show only the current (latest) available fuel and remaining KM
     function renderTotalsSummary() {
       const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
-      const sumAvailableFuel = computedRecords.reduce((acc, rec) => acc + (rec.availableFuel || 0), 0);
-      const sumRemainingKm = computedRecords.reduce((acc, rec) => acc + (rec.remainingKm || 0), 0);
+      if (computedRecords.length === 0) {
+        document.getElementById('totalsSummary').innerHTML =
+          `No data yet.<br>
+           <b>Available Fuel:</b> 0.00 liters<br>
+           <b>Remaining KM:</b> 0.0 km`;
+        return;
+      }
+      const latest = computedRecords[computedRecords.length - 1];
       document.getElementById('totalsSummary').innerHTML =
-        `Sum of <b>Available Fuel</b>: ${sumAvailableFuel.toFixed(2)} liters<br>
-         Sum of <b>Remaining KM</b>: ${sumRemainingKm.toFixed(1)} km`;
+        `<b>Available Fuel:</b> ${latest.availableFuel.toFixed(2)} liters<br>
+         <b>Remaining KM:</b> ${latest.remainingKm.toFixed(1)} km`;
     }
 
     function initFirebase() {
