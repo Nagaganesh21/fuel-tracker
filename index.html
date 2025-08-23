@@ -276,8 +276,8 @@
           <input type="number" id="distance" step="0.1" readonly aria-label="Distance">
         </div>
         <div>
-          <label for="fuel">Fuel (liters)</label>
-          <input type="number" id="fuel" step="0.1" required aria-label="Fuel in liters">
+          <label for="fuel">Fuel Added (liters)</label>
+          <input type="number" id="fuel" step="0.1" required aria-label="Fuel Added in liters">
         </div>
         <div>
           <label for="cost">Cost (₹)</label>
@@ -307,7 +307,7 @@
             <th>End</th>
             <th>Distance</th>
             <th>Fuel Used</th>
-            <th>Fuel</th>
+            <th>Fuel Added</th>
             <th>Cost</th>
             <th>Available Fuel</th>
             <th>Remaining KM</th>
@@ -349,25 +349,21 @@
     const roundN = (v, n = 1) => Number(num(v, 0).toFixed(n));
     const clamp0 = v => Math.max(0, v);
 
+    // Compute for each row: Fuel Used, Available Fuel (Fuel Added - Fuel Used), Remaining KM
     function computeAvailableFuel(records, mileage = BIKE_MILEAGE) {
-      let prevRemainingFuel = 0;
-      const sorted = records.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-      return sorted.map((r, i) => {
-        const fuelAdded = num(r.fuel);
+      return records.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '')).map((r, i) => {
         const distance = num(r.distance);
-        const availableFuel = prevRemainingFuel + fuelAdded;
-        const used = mileage > 0 ? (distance / mileage) : 0;
-        const remainingFuel = clamp0(availableFuel - used);
-        const remainingKm = roundN(remainingFuel * mileage, 1);
+        const fuelAdded = num(r.fuel);
+        const fuelUsed = mileage > 0 ? distance / mileage : 0;
+        const availableFuel = clamp0(fuelAdded - fuelUsed);
+        const remainingKm = roundN(availableFuel * mileage, 1);
         const origIdx = records.findIndex(rr => rr.date === r.date && rr.start === r.start && rr.end === r.end);
-        prevRemainingFuel = remainingFuel;
         return {
           ...r,
+          fuelUsed: roundN(fuelUsed, 2),
           availableFuel: roundN(availableFuel, 2),
-          remainingFuel: roundN(remainingFuel, 2),
           remainingKm,
-          origIdx,
-          fuelUsed: roundN(used, 2) // Add fuelUsed for each row
+          origIdx
         };
       });
     }
@@ -510,7 +506,7 @@ Your data will then sync across all devices!`);
           <td>${num(r.start).toFixed(1)}</td>
           <td>${num(r.end).toFixed(1)}</td>
           <td>${num(r.distance).toFixed(1)}</td>
-          <td>${r.fuelUsed !== undefined ? r.fuelUsed.toFixed(2) : (BIKE_MILEAGE > 0 ? (num(r.distance)/BIKE_MILEAGE).toFixed(2) : "0.00")}</td>
+          <td>${r.fuelUsed.toFixed(2)}</td>
           <td>${num(r.fuel).toFixed(1)}</td>
           <td>₹${num(r.cost).toFixed(2)}</td>
           <td>${r.availableFuel.toFixed(2)}</td>
@@ -597,10 +593,10 @@ Your data will then sync across all devices!`);
     };
 
     window.exportCSV = function() {
-      let csv = 'Date,Start,End,Distance,Fuel Used,Fuel,Cost,Available Fuel,Remaining KM\n';
+      let csv = 'Date,Start,End,Distance,Fuel Used,Fuel Added,Cost,Available Fuel,Remaining KM\n';
       const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
       computedRecords.forEach(r => {
-        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuelUsed !== undefined ? r.fuelUsed : (BIKE_MILEAGE > 0 ? (num(r.distance)/BIKE_MILEAGE).toFixed(2) : "0.00")},${r.fuel},${r.cost},${r.availableFuel},${r.remainingKm}\n`;
+        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuelUsed},${r.fuel},${r.cost},${r.availableFuel},${r.remainingKm}\n`;
       });
       let blob = new Blob([csv], { type: 'text/csv' });
       let link = document.createElement('a');
