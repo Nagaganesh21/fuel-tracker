@@ -18,7 +18,31 @@
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(6px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
     }
+    .sync-status {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+    }
+    .sync-online { background: #27ae60; }
+    .sync-offline { background: #e74c3c; }
+    .sync-syncing { background: #f39c12; }
+    .firebase-notice {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px;
+      text-align: center;
+    }
+    .firebase-notice.hidden { display: none; }
     h1 { margin: 0; font-size: 2rem; }
     main {
       padding: 20px;
@@ -74,8 +98,15 @@
       background: #3b40a4;
       transform: scale(1.05);
     }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
     button.danger { background: #e63946; }
     button.danger:hover { background: #c92a37; }
+    button.success { background: #27ae60; }
+    button.success:hover { background: #2ecc71; }
     /* Action buttons inside table */
     .action-group {
       display: flex;
@@ -155,7 +186,15 @@
   </style>
 </head>
 <body>
-  <header><h1>⛽ Fuel Tracker</h1></header>
+  <header>
+    <div id="syncStatus" class="sync-status sync-offline">🔴 Offline</div>
+    <h1>⛽ Fuel Tracker</h1>
+  </header>
+
+  <div id="firebaseNotice" class="firebase-notice">
+    ⚠️ <strong>Firebase Setup Required:</strong> Configure Firebase for cloud sync across devices.
+    <button onclick="showFirebaseSetup()" class="success" style="margin-left: 10px;">Setup Guide</button>
+  </div>
 
   <!-- Settings toggle -->
   <div class="settings">
@@ -184,7 +223,7 @@
         <div><label>Cost (₹)</label><input type="number" id="cost" step="0.01" required></div>
         <div><label>Remaining KM</label><input type="number" id="remainingKm" step="0.1" readonly></div>
         <div style="grid-column: 1 / -1; text-align:center;">
-          <button type="submit">💾 Save Entry</button>
+          <button type="submit" id="submitBtn">💾 Save Entry</button>
         </div>
       </form>
     </div>
@@ -215,13 +254,107 @@
 
   <div id="toast" class="toast">✅ Saved successfully</div>
 
-  <script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    // TODO: Replace with your Firebase config
+    const firebaseConfig = {
+      // PASTE YOUR FIREBASE CONFIG HERE
+      apiKey: "your-api-key-here",
+      authDomain: "your-project.firebaseapp.com", 
+      projectId: "your-project-id",
+      storageBucket: "your-project.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "your-app-id"
+    };
+
+    // Global variables
     let BIKE_MILEAGE = Number(localStorage.getItem('bikeMileage')) || 40;
-    let records = JSON.parse(localStorage.getItem('fuelRecords')) || [];
+    let records = [];
     let editIndex = -1;
+    let app, db;
+    let isFirebaseConfigured = false;
 
     const num = (v, def = 0) => { v = Number(v); return Number.isFinite(v) ? v : def; };
     const roundN = (v, n = 1) => Number(num(v, 0).toFixed(n));
+
+    function initFirebase() {
+      try {
+        // Check if config is properly set
+        if (firebaseConfig.apiKey === "your-api-key-here") {
+          console.log("Firebase not configured - using local storage");
+          loadFromLocalStorage();
+          return;
+        }
+
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        isFirebaseConfigured = true;
+        
+        // Hide setup notice
+        document.getElementById('firebaseNotice').classList.add('hidden');
+        
+        // Load records from Firebase
+        loadFromFirebase();
+        updateSyncStatus('online');
+        
+      } catch (error) {
+        console.error("Firebase initialization failed:", error);
+        updateSyncStatus('offline');
+        loadFromLocalStorage();
+      }
+    }
+
+    function loadFromFirebase() {
+      const q = query(collection(db, 'fuelRecords'), orderBy('date', 'desc'));
+      onSnapshot(q, (querySnapshot) => {
+        records = [];
+        querySnapshot.forEach((docSnap) => {
+          records.push({
+            firebaseId: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+        migrateRecords();
+        renderRecords();
+        renderSummaries();
+        updateSyncStatus('online');
+      }, (error) => {
+        console.error("Error loading from Firebase:", error);
+        updateSyncStatus('offline');
+        loadFromLocalStorage();
+      });
+    }
+
+    function loadFromLocalStorage() {
+      records = JSON.parse(localStorage.getItem('fuelRecords')) || [];
+      migrateRecords();
+      renderRecords();
+      renderSummaries();
+      updateSyncStatus('offline');
+    }
+
+    function updateSyncStatus(status) {
+      const statusEl = document.getElementById('syncStatus');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      if (status === 'online') {
+        statusEl.className = 'sync-status sync-online';
+        statusEl.innerHTML = '🟢 Online';
+        submitBtn.disabled = false;
+      } else if (status === 'syncing') {
+        statusEl.className = 'sync-status sync-syncing';
+        statusEl.innerHTML = '🟡 Syncing...';
+        submitBtn.disabled = true;
+      } else {
+        statusEl.className = 'sync-status sync-offline';
+        statusEl.innerHTML = '🔴 Offline';
+        submitBtn.disabled = false;
+      }
+    }
 
     function migrateRecords() {
       let changed = false;
@@ -238,63 +371,48 @@
         }
         return { ...r, start, end, distance, fuel, cost, remainingKm };
       });
-      if (changed) localStorage.setItem('fuelRecords', JSON.stringify(records));
+      if (changed && !isFirebaseConfigured) {
+        localStorage.setItem('fuelRecords', JSON.stringify(records));
+      }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      migrateRecords();
-      renderRecords(); renderSummaries();
-      document.getElementById('bikeMileage').value = BIKE_MILEAGE;
-      // Set today's date by default
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
-    });
+    // Make functions global
+    window.showFirebaseSetup = function() {
+      alert(`Firebase Setup Instructions:
 
-    document.getElementById('meterEnd').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
-    document.getElementById('meterStart').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
-    document.getElementById('fuel').addEventListener('input', calcRemainingKm);
+1. Go to: https://console.firebase.google.com/
+2. Create a new project: 'fuel-tracker'
+3. Enable Firestore Database (test mode)
+4. Get your config from Project Settings > Web App
+5. Replace the firebaseConfig in the code with your config
+6. Update your GitHub repository
 
-    function calcDistance() {
+Your data will then sync across all devices!`);
+    };
+
+    window.calcDistance = function() {
       let start = num(document.getElementById('meterStart').value);
       let end = num(document.getElementById('meterEnd').value);
       let dist = end - start;
       document.getElementById('distance').value = dist > 0 ? dist.toFixed(1) : 0;
-    }
+    };
 
-    function calcRemainingKm() {
+    window.calcRemainingKm = function() {
       let distance = num(document.getElementById('distance').value);
       let fuel = num(document.getElementById('fuel').value);
       let possible_km = fuel * BIKE_MILEAGE;
       let remaining_km = possible_km - distance;
       document.getElementById('remainingKm').value = remaining_km > 0 ? remaining_km.toFixed(1) : 0;
-    }
+    };
 
-    document.getElementById('fuelForm').addEventListener('submit', e => {
-      e.preventDefault();
-      let start = roundN(document.getElementById('meterStart').value, 1);
-      let end = roundN(document.getElementById('meterEnd').value, 1);
-      if(end < start){ alert('End meter must be greater than start meter'); return; }
-      let distance = roundN(end - start, 1);
-      let fuel = roundN(document.getElementById('fuel').value, 1);
-      let cost = roundN(document.getElementById('cost').value, 2);
-      let remainingKm = roundN(document.getElementById('remainingKm').value, 1);
-
-      let date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
-      let record = {date, start, end, distance, fuel, cost, remainingKm};
-      if(editIndex >= 0){ records[editIndex] = record; editIndex = -1; }
-      else { records.push(record); }
-      localStorage.setItem('fuelRecords', JSON.stringify(records));
-      showToast(); e.target.reset();
-      // reset today's date again
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
-      renderRecords(); renderSummaries();
-    });
-
-    function renderRecords(){
+    window.renderRecords = function() {
       let tbody = document.querySelector('#recordsTable tbody');
       tbody.innerHTML = '';
       records.forEach((r,i) => {
-        const start = num(r.start); const end = num(r.end);
-        const distance = num(r.distance); const fuel = num(r.fuel);
+        const start = num(r.start);
+        const end = num(r.end);
+        const distance = num(r.distance);
+        const fuel = num(r.fuel);
         const cost = num(r.cost);
         const remaining = Number.isFinite(r.remainingKm) ? num(r.remainingKm) : roundN((fuel * BIKE_MILEAGE) - distance, 1);
         let row = `<tr>
@@ -314,19 +432,23 @@
         </tr>`;
         tbody.innerHTML += row;
       });
-    }
+    };
 
-    function renderSummaries(){
+    window.renderSummaries = function() {
       let summaryDiv = document.getElementById('monthlySummary');
       summaryDiv.innerHTML = '';
       let grouped = {};
       records.forEach(r => {
         let month = (r.date || '').substring(0,7);
         if(!grouped[month]) grouped[month] = {distance:0,fuel:0,cost:0,remaining:0};
-        const d = num(r.distance); const f = num(r.fuel); const c = num(r.cost);
+        const d = num(r.distance);
+        const f = num(r.fuel);
+        const c = num(r.cost);
         const rem = Number.isFinite(r.remainingKm) ? num(r.remainingKm) : roundN((f * BIKE_MILEAGE) - d, 1);
-        grouped[month].distance += d; grouped[month].fuel += f;
-        grouped[month].cost += c; grouped[month].remaining += rem;
+        grouped[month].distance += d;
+        grouped[month].fuel += f;
+        grouped[month].cost += c;
+        grouped[month].remaining += rem;
       });
       for(let m in grouped){
         const g = grouped[m];
@@ -338,9 +460,9 @@
           Mileage: ${avgMileage} km/L, 
           Remaining: ${g.remaining.toFixed(1)} km</p>`;
       }
-    }
+    };
 
-    function editRecord(i){
+    window.editRecord = function(i) {
       let r = records[i];
       document.getElementById('date').value = r.date || new Date().toISOString().split('T')[0];
       document.getElementById('meterStart').value = num(r.start).toFixed(1);
@@ -350,17 +472,33 @@
       document.getElementById('cost').value = num(r.cost).toFixed(2);
       document.getElementById('remainingKm').value = num(r.remainingKm).toFixed(1);
       editIndex = i;
-    }
+    };
 
-    function deleteRecord(i){
+    window.deleteRecord = async function(i) {
       if(confirm('Delete this record?')){
-        records.splice(i,1);
-        localStorage.setItem('fuelRecords', JSON.stringify(records));
-        renderRecords(); renderSummaries();
+        try {
+          updateSyncStatus('syncing');
+          
+          if (isFirebaseConfigured && db && records[i].firebaseId) {
+            await deleteDoc(doc(db, 'fuelRecords', records[i].firebaseId));
+          } else {
+            records.splice(i,1);
+            localStorage.setItem('fuelRecords', JSON.stringify(records));
+            renderRecords();
+            renderSummaries();
+          }
+          
+          updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline');
+          
+        } catch (error) {
+          console.error("Error deleting record:", error);
+          alert("Failed to delete record. Please try again.");
+          updateSyncStatus('offline');
+        }
       }
-    }
+    };
 
-    function exportCSV(){
+    window.exportCSV = function() {
       let csv = 'Date,Start,End,Distance,Fuel,Cost,Remaining KM\n';
       records.forEach(r => {
         csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuel},${r.cost},${r.remainingKm}\n`;
@@ -370,34 +508,105 @@
       link.href = URL.createObjectURL(blob);
       link.download = 'fuel-records.csv';
       link.click();
-    }
+    };
 
-    function showToast(){
+    window.showToast = function() {
       let toast = document.getElementById('toast');
       toast.className = 'toast show';
       setTimeout(() => toast.className = 'toast', 2000);
-    }
+    };
 
-    function toggleSettings(){
+    window.toggleSettings = function() {
       let p = document.getElementById('settingsPanel');
       p.style.display = p.style.display === 'block' ? 'none':'block';
-    }
+    };
 
-    function saveSettings(){
+    window.saveSettings = function() {
       const mileageInput = num(document.getElementById('bikeMileage').value, 40);
       BIKE_MILEAGE = mileageInput > 0 ? mileageInput : 40;
       localStorage.setItem('bikeMileage', BIKE_MILEAGE);
       alert('Bike mileage updated to ' + BIKE_MILEAGE + ' km/L');
-      calcRemainingKm(); renderRecords(); renderSummaries();
-    }
+      calcRemainingKm();
+      renderRecords();
+      renderSummaries();
+    };
 
-    function resetApp(){
+    window.resetApp = function() {
       if(confirm('This will delete ALL records. Continue?')){
-        records = [];
-        localStorage.removeItem('fuelRecords');
-        renderRecords(); renderSummaries();
+        if (isFirebaseConfigured) {
+          alert("Please delete records individually when using cloud sync for safety.");
+        } else {
+          records = [];
+          localStorage.removeItem('fuelRecords');
+          renderRecords();
+          renderSummaries();
+        }
       }
-    }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('bikeMileage').value = BIKE_MILEAGE;
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
+      initFirebase();
+    });
+
+    document.getElementById('meterEnd').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
+    document.getElementById('meterStart').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
+    document.getElementById('fuel').addEventListener('input', calcRemainingKm);
+
+    document.getElementById('fuelForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      updateSyncStatus('syncing');
+      
+      let start = roundN(document.getElementById('meterStart').value, 1);
+      let end = roundN(document.getElementById('meterEnd').value, 1);
+      if(end < start){ alert('End meter must be greater than start meter'); updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline'); return; }
+      
+      let distance = roundN(end - start, 1);
+      let fuel = roundN(document.getElementById('fuel').value, 1);
+      let cost = roundN(document.getElementById('cost').value, 2);
+      let remainingKm = roundN(document.getElementById('remainingKm').value, 1);
+      let date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+      
+      let record = {date, start, end, distance, fuel, cost, remainingKm};
+
+      try {
+        if(editIndex >= 0){
+          // Update existing record
+          if (isFirebaseConfigured && db && records[editIndex].firebaseId) {
+            await updateDoc(doc(db, 'fuelRecords', records[editIndex].firebaseId), record);
+          } else {
+            records[editIndex] = record;
+            localStorage.setItem('fuelRecords', JSON.stringify(records));
+            renderRecords();
+            renderSummaries();
+          }
+          editIndex = -1;
+        } else {
+          // Add new record
+          if (isFirebaseConfigured && db) {
+            await addDoc(collection(db, 'fuelRecords'), record);
+          } else {
+            records.push(record);
+            localStorage.setItem('fuelRecords', JSON.stringify(records));
+            renderRecords();
+            renderSummaries();
+          }
+        }
+        
+        showToast();
+        e.target.reset();
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline');
+        
+      } catch (error) {
+        console.error("Error saving record:", error);
+        alert("Failed to save record. Please try again.");
+        updateSyncStatus('offline');
+      }
+    });
   </script>
 </body>
-</html>
+  </html>
