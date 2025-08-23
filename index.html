@@ -368,8 +368,10 @@
       });
     }
 
+    // Show cumulative available fuel in the summary card!
     function renderTotalsSummary() {
       const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
+
       if (computedRecords.length === 0) {
         document.getElementById('totalsSummary').innerHTML =
           `No data yet.<br>
@@ -377,10 +379,21 @@
            <b>Remaining KM:</b> 0.0 km`;
         return;
       }
-      const latest = computedRecords[computedRecords.length - 1];
+
+      // Calculate cumulative fuel
+      let totalFuelAdded = 0;
+      let totalFuelUsed = 0;
+      computedRecords.forEach(r => {
+        totalFuelAdded += Number(r.fuel) || 0;
+        totalFuelUsed += Number(r.fuelUsed) || 0;
+      });
+
+      let totalAvailableFuel = Math.max(0, totalFuelAdded - totalFuelUsed);
+      let totalRemainingKm = Math.round(totalAvailableFuel * BIKE_MILEAGE * 10) / 10;
+
       document.getElementById('totalsSummary').innerHTML =
-        `<b>Available Fuel:</b> ${latest.availableFuel.toFixed(2)} liters<br>
-         <b>Remaining KM:</b> ${latest.remainingKm.toFixed(1)} km`;
+        `<b>Available Fuel:</b> ${totalAvailableFuel.toFixed(2)} liters<br>
+         <b>Remaining KM:</b> ${totalRemainingKm.toFixed(1)} km`;
     }
 
     function initFirebase() {
