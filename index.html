@@ -262,6 +262,15 @@
     #costTable th {
       background: #f0f0f0;
     }
+    /* --- Fuel Table styles --- */
+    #fuelMeterTable th, #fuelMeterTable td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    #fuelMeterTable th {
+      background: #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -299,73 +308,99 @@
       <button id="toggleCostBtn" class="toggle-btn" onclick="showEntryForm('cost')">Cost Expenditure</button>
     </div>
 
-    <!-- Fuel Meter Entry Form -->
-    <div class="card entry-form-section" id="fuelEntrySection">
-      <h2>Fuel Meter Entry</h2>
-      <form id="fuelForm" class="form-grid" autocomplete="off">
-        <div>
-          <label for="date">Date</label>
-          <input type="date" id="date" required aria-label="Date">
+    <!-- Fuel Meter Entry Form & Table -->
+    <div id="fuelMeterSection" class="entry-form-section">
+      <div class="card">
+        <h2>Fuel Meter Entry</h2>
+        <form id="fuelForm" class="form-grid" autocomplete="off">
+          <div>
+            <label for="date">Date</label>
+            <input type="date" id="date" required aria-label="Date">
+          </div>
+          <div>
+            <label for="meterStart">Meter Start</label>
+            <input type="number" id="meterStart" step="0.1" required aria-label="Meter Start">
+          </div>
+          <div>
+            <label for="meterEnd">Meter End</label>
+            <input type="number" id="meterEnd" step="0.1" required aria-label="Meter End">
+          </div>
+          <div>
+            <label for="distance">Distance</label>
+            <input type="number" id="distance" step="0.1" readonly aria-label="Distance">
+          </div>
+          <div>
+            <label for="fuel">Fuel Added (liters)</label>
+            <input type="number" id="fuel" step="0.1" required aria-label="Fuel Added in liters">
+          </div>
+          <div>
+            <label for="cost">Cost (₹)</label>
+            <input type="number" id="cost" step="0.01" required aria-label="Cost in rupees">
+          </div>
+          <div>
+            <label for="remainingKm">Remaining KM</label>
+            <input type="number" id="remainingKm" step="0.1" readonly aria-label="Remaining Kilometers">
+          </div>
+          <div style="grid-column: 1 / -1; text-align:center;">
+            <button type="submit" id="submitBtn">💾 Save Entry</button>
+            <button type="button" id="cancelEditBtn" class="cancel-edit-btn" style="display:none;">Cancel Edit</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="records-header">
+          <h2>Fuel Meter Records</h2>
+          <button onclick="exportCSV()" class="export-btn" aria-label="Export as CSV">📥 Export CSV</button>
         </div>
-        <div>
-          <label for="meterStart">Meter Start</label>
-          <input type="number" id="meterStart" step="0.1" required aria-label="Meter Start">
-        </div>
-        <div>
-          <label for="meterEnd">Meter End</label>
-          <input type="number" id="meterEnd" step="0.1" required aria-label="Meter End">
-        </div>
-        <div>
-          <label for="distance">Distance</label>
-          <input type="number" id="distance" step="0.1" readonly aria-label="Distance">
-        </div>
-        <div>
-          <label for="fuel">Fuel Added (liters)</label>
-          <input type="number" id="fuel" step="0.1" required aria-label="Fuel Added in liters">
-        </div>
-        <div>
-          <label for="cost">Cost (₹)</label>
-          <input type="number" id="cost" step="0.01" required aria-label="Cost in rupees">
-        </div>
-        <div>
-          <label for="remainingKm">Remaining KM</label>
-          <input type="number" id="remainingKm" step="0.1" readonly aria-label="Remaining Kilometers">
-        </div>
-        <div style="grid-column: 1 / -1; text-align:center;">
-          <button type="submit" id="submitBtn">💾 Save Entry</button>
-          <button type="button" id="cancelEditBtn" class="cancel-edit-btn" style="display:none;">Cancel Edit</button>
-        </div>
-      </form>
+        <table id="fuelMeterTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Distance</th>
+              <th>Fuel Used</th>
+              <th>Fuel Added</th>
+              <th>Cost</th>
+              <th>Available Fuel</th>
+              <th>Remaining KM</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Cost Expenditure Entry Form -->
-    <div class="card entry-form-section" id="costEntrySection">
-      <h2>Cost Expenditure</h2>
-      <form id="costForm" class="form-grid" autocomplete="off">
-        <div>
-          <label for="costDate">Date</label>
-          <input type="date" id="costDate" required aria-label="Cost Date">
-        </div>
-        <div>
-          <label for="costItem">Item</label>
-          <select id="costItem" required aria-label="Cost Item">
-            <option value="Petrol">Petrol</option>
-            <option value="Goods">Goods</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Others">Others</option>
-          </select>
-        </div>
-        <div>
-          <label for="costAmount">Cost (₹)</label>
-          <input type="number" id="costAmount" step="0.01" required aria-label="Cost Amount">
-        </div>
-        <div style="grid-column: 1 / -1; text-align:center;">
-          <button type="submit" id="costSubmitBtn">💾 Save Cost</button>
-          <button type="button" id="cancelCostEditBtn" class="cancel-edit-btn" style="display:none;">Cancel Edit</button>
-        </div>
-      </form>
-      <!-- Cost Expenditure Table -->
-      <div style="margin-top:18px;">
+    <!-- Cost Expenditure Entry Form & Table -->
+    <div id="costSection" class="entry-form-section">
+      <div class="card">
+        <h2>Cost Expenditure</h2>
+        <form id="costForm" class="form-grid" autocomplete="off">
+          <div>
+            <label for="costDate">Date</label>
+            <input type="date" id="costDate" required aria-label="Cost Date">
+          </div>
+          <div>
+            <label for="costItem">Item</label>
+            <select id="costItem" required aria-label="Cost Item">
+              <option value="Petrol">Petrol</option>
+              <option value="Goods">Goods</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+          <div>
+            <label for="costAmount">Cost (₹)</label>
+            <input type="number" id="costAmount" step="0.01" required aria-label="Cost Amount">
+          </div>
+          <div style="grid-column: 1 / -1; text-align:center;">
+            <button type="submit" id="costSubmitBtn">💾 Save Cost</button>
+            <button type="button" id="cancelCostEditBtn" class="cancel-edit-btn" style="display:none;">Cancel Edit</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
         <h3 style="margin-bottom:4px;">Cost Expenditure Records</h3>
         <table id="costTable">
           <thead>
@@ -379,31 +414,6 @@
           <tbody></tbody>
         </table>
       </div>
-    </div>
-
-    <!-- Fuel Records Table -->
-    <div class="card">
-      <div class="records-header">
-        <h2>Records</h2>
-        <button onclick="exportCSV()" class="export-btn" aria-label="Export as CSV">📥 Export CSV</button>
-      </div>
-      <table id="recordsTable">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Distance</th>
-            <th>Fuel Used</th>
-            <th>Fuel Added</th>
-            <th>Cost</th>
-            <th>Available Fuel</th>
-            <th>Remaining KM</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
     </div>
 
     <div class="card">
@@ -444,16 +454,16 @@
 
     // --- Toggle Form Logic ---
     window.showEntryForm = function(type) {
-      // Hide both forms first
-      document.getElementById('fuelEntrySection').classList.remove('active');
-      document.getElementById('costEntrySection').classList.remove('active');
+      // Hide both sections first
+      document.getElementById('fuelMeterSection').classList.remove('active');
+      document.getElementById('costSection').classList.remove('active');
       document.getElementById('toggleFuelBtn').classList.remove('active');
       document.getElementById('toggleCostBtn').classList.remove('active');
       if (type === 'fuel') {
-        document.getElementById('fuelEntrySection').classList.add('active');
+        document.getElementById('fuelMeterSection').classList.add('active');
         document.getElementById('toggleFuelBtn').classList.add('active');
       } else if (type === 'cost') {
-        document.getElementById('costEntrySection').classList.add('active');
+        document.getElementById('costSection').classList.add('active');
         document.getElementById('toggleCostBtn').classList.add('active');
       }
     };
@@ -520,7 +530,7 @@
       }
     }
 
-    // --- Fuel Records (existing) ---
+    // --- Fuel Records ---
     function loadFromFirebase() {
       const q = query(collection(db, 'fuelRecords'), orderBy('date', 'asc'));
       onSnapshot(q, (querySnapshot) => {
@@ -529,7 +539,7 @@
           records.push({ firebaseId: docSnap.id, ...docSnap.data() });
         });
         migrateRecords();
-        renderRecords();
+        renderFuelMeterTable();
         renderSummaries();
         renderTotalsSummary();
       }, () => {
@@ -539,7 +549,7 @@
     function loadFromLocalStorage() {
       records = JSON.parse(localStorage.getItem('fuelRecords')) || [];
       migrateRecords();
-      renderRecords();
+      renderFuelMeterTable();
       renderSummaries();
       renderTotalsSummary();
     }
@@ -634,8 +644,9 @@ Your data will then sync across all devices!`);
       document.getElementById('remainingKm').value = remaining_km.toFixed(1);
     };
 
-    window.renderRecords = function() {
-      let tbody = document.querySelector('#recordsTable tbody');
+    // --- Fuel Meter Table rendering + actions ---
+    window.renderFuelMeterTable = function() {
+      let tbody = document.querySelector('#fuelMeterTable tbody');
       tbody.innerHTML = '';
       const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
       computedRecords.forEach((r, idx) => {
@@ -749,7 +760,7 @@ Your data will then sync across all devices!`);
       localStorage.setItem('bikeMileage', BIKE_MILEAGE);
       alert('Bike mileage updated to ' + BIKE_MILEAGE + ' km/L');
       calcRemainingKm();
-      renderRecords();
+      renderFuelMeterTable();
       renderSummaries();
       renderTotalsSummary();
     };
@@ -763,7 +774,7 @@ Your data will then sync across all devices!`);
           costRecords = [];
           localStorage.removeItem('fuelRecords');
           localStorage.removeItem('costRecords');
-          renderRecords();
+          renderFuelMeterTable();
           renderSummaries();
           renderTotalsSummary();
           renderCostTable();
@@ -778,10 +789,10 @@ Your data will then sync across all devices!`);
       initFirebase();
       document.getElementById('cancelEditBtn').addEventListener('click', window.cancelEdit);
       document.getElementById('cancelCostEditBtn').addEventListener('click', window.cancelCostEdit);
-      // Hide both forms by default
-      document.getElementById('fuelEntrySection').classList.remove('active');
-      document.getElementById('costEntrySection').classList.remove('active');
-      showEntryForm('fuel'); // Show fuel form by default
+      // Hide both by default, show fuel by default
+      document.getElementById('fuelMeterSection').classList.remove('active');
+      document.getElementById('costSection').classList.remove('active');
+      showEntryForm('fuel');
     });
 
     // --- Fuel Form Events (existing) ---
@@ -808,7 +819,7 @@ Your data will then sync across all devices!`);
           } else if (!isFirebaseConfigured) {
             records[editIndex] = record;
             localStorage.setItem('fuelRecords', JSON.stringify(records));
-            renderRecords();
+            renderFuelMeterTable();
             renderSummaries();
             renderTotalsSummary();
           }
@@ -820,7 +831,7 @@ Your data will then sync across all devices!`);
           } else if (!isFirebaseConfigured) {
             records.push(record);
             localStorage.setItem('fuelRecords', JSON.stringify(records));
-            renderRecords();
+            renderFuelMeterTable();
             renderSummaries();
             renderTotalsSummary();
           }
@@ -869,7 +880,7 @@ Your data will then sync across all devices!`);
           } else if (!isFirebaseConfigured) {
             records.splice(i, 1);
             localStorage.setItem('fuelRecords', JSON.stringify(records));
-            renderRecords();
+            renderFuelMeterTable();
             renderSummaries();
             renderTotalsSummary();
           }
@@ -917,11 +928,6 @@ Your data will then sync across all devices!`);
         alert("Failed to save cost record. Please try again.");
         updateSyncStatus('offline');
       }
-    });
-
-    // --- Show fuel form by default on first load ---
-    document.addEventListener('DOMContentLoaded', () => {
-      showEntryForm('fuel');
     });
 
     window.renderSummaries = function() {
