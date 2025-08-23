@@ -302,9 +302,16 @@
       <table id="recordsTable">
         <thead>
           <tr>
-            <th>Date</th><th>Start</th><th>End</th><th>Distance</th>
-            <th>Fuel</th><th>Cost</th>
-            <th>Available Fuel</th><th>Remaining KM</th><th>Actions</th>
+            <th>Date</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Distance</th>
+            <th>Fuel Used</th>
+            <th>Fuel</th>
+            <th>Cost</th>
+            <th>Available Fuel</th>
+            <th>Remaining KM</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -359,7 +366,8 @@
           availableFuel: roundN(availableFuel, 2),
           remainingFuel: roundN(remainingFuel, 2),
           remainingKm,
-          origIdx
+          origIdx,
+          fuelUsed: roundN(used, 2) // Add fuelUsed for each row
         };
       });
     }
@@ -502,6 +510,7 @@ Your data will then sync across all devices!`);
           <td>${num(r.start).toFixed(1)}</td>
           <td>${num(r.end).toFixed(1)}</td>
           <td>${num(r.distance).toFixed(1)}</td>
+          <td>${r.fuelUsed !== undefined ? r.fuelUsed.toFixed(2) : (BIKE_MILEAGE > 0 ? (num(r.distance)/BIKE_MILEAGE).toFixed(2) : "0.00")}</td>
           <td>${num(r.fuel).toFixed(1)}</td>
           <td>₹${num(r.cost).toFixed(2)}</td>
           <td>${r.availableFuel.toFixed(2)}</td>
@@ -588,10 +597,10 @@ Your data will then sync across all devices!`);
     };
 
     window.exportCSV = function() {
-      let csv = 'Date,Start,End,Distance,Fuel,Cost,Available Fuel,Remaining KM\n';
+      let csv = 'Date,Start,End,Distance,Fuel Used,Fuel,Cost,Available Fuel,Remaining KM\n';
       const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
       computedRecords.forEach(r => {
-        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuel},${r.cost},${r.availableFuel},${r.remainingKm}\n`;
+        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuelUsed !== undefined ? r.fuelUsed : (BIKE_MILEAGE > 0 ? (num(r.distance)/BIKE_MILEAGE).toFixed(2) : "0.00")},${r.fuel},${r.cost},${r.availableFuel},${r.remainingKm}\n`;
       });
       let blob = new Blob([csv], { type: 'text/csv' });
       let link = document.createElement('a');
