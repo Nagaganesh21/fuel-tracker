@@ -211,6 +211,20 @@
         box-sizing: border-box;
       }
     }
+    /* Summary card for totals */
+    #totalsSummaryCard {
+      background: #f5f6fa; 
+      color: #222; 
+      border: 2px solid #4e54c8; 
+      margin-bottom: 10px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      text-align: center;
+    }
+    #totalsSummary {
+      font-size: 1.1rem; 
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -237,6 +251,13 @@
   </div>
 
   <main>
+    <div class="card" id="totalsSummaryCard">
+      <h3 style="margin-top: 0;">Total Summary</h3>
+      <div id="totalsSummary">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
     <div class="card">
       <h2>Add / Edit Entry</h2>
       <form id="fuelForm" class="form-grid" autocomplete="off">
@@ -348,6 +369,16 @@
       });
     }
 
+    // Totals summary for Available Fuel and Remaining KM
+    function renderTotalsSummary() {
+      const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
+      const sumAvailableFuel = computedRecords.reduce((acc, rec) => acc + (rec.availableFuel || 0), 0);
+      const sumRemainingKm = computedRecords.reduce((acc, rec) => acc + (rec.remainingKm || 0), 0);
+      document.getElementById('totalsSummary').innerHTML =
+        `Sum of <b>Available Fuel</b>: ${sumAvailableFuel.toFixed(2)} liters<br>
+         Sum of <b>Remaining KM</b>: ${sumRemainingKm.toFixed(1)} km`;
+    }
+
     function initFirebase() {
       try {
         if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "your-api-key-here") {
@@ -376,6 +407,7 @@
         migrateRecords();
         renderRecords();
         renderSummaries();
+        renderTotalsSummary();
         updateSyncStatus('online');
       }, () => {
         updateSyncStatus('offline');
@@ -388,6 +420,7 @@
       migrateRecords();
       renderRecords();
       renderSummaries();
+      renderTotalsSummary();
       updateSyncStatus('offline');
     }
 
@@ -459,13 +492,10 @@ Your data will then sync across all devices!`);
       document.getElementById('remainingKm').value = remaining_km.toFixed(1);
     };
 
-    // Updated: renderRecords with available fuel carry logic
     window.renderRecords = function() {
       let tbody = document.querySelector('#recordsTable tbody');
       tbody.innerHTML = '';
-      // Use available fuel logic
       const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
-      // Restore original order for edit/delete
       computedRecords.forEach((r, idx) => {
         let row = `<tr>
           <td>${r.date || ''}</td>
@@ -485,9 +515,9 @@ Your data will then sync across all devices!`);
         </tr>`;
         tbody.innerHTML += row;
       });
+      renderTotalsSummary();
     };
 
-    // Updated: renderSummaries uses computed logic
     window.renderSummaries = function() {
       let summaryDiv = document.getElementById('monthlySummary');
       summaryDiv.innerHTML = '';
@@ -511,9 +541,9 @@ Your data will then sync across all devices!`);
           Mileage: ${avgMileage} km/L, 
           Remaining: ${g.remaining.toFixed(1)} km</p>`;
       }
+      renderTotalsSummary();
     };
 
-    // Updated: editing picks the original record
     window.editRecord = function(i) {
       let r = records[i];
       document.getElementById('date').value = r.date || new Date().toISOString().split('T')[0];
@@ -547,6 +577,7 @@ Your data will then sync across all devices!`);
             localStorage.setItem('fuelRecords', JSON.stringify(records));
             renderRecords();
             renderSummaries();
+            renderTotalsSummary();
           }
           updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline');
         } catch {
@@ -588,6 +619,7 @@ Your data will then sync across all devices!`);
       calcRemainingKm();
       renderRecords();
       renderSummaries();
+      renderTotalsSummary();
     };
 
     window.resetApp = function() {
@@ -599,6 +631,7 @@ Your data will then sync across all devices!`);
           localStorage.removeItem('fuelRecords');
           renderRecords();
           renderSummaries();
+          renderTotalsSummary();
         }
       }
     };
@@ -635,6 +668,7 @@ Your data will then sync across all devices!`);
             localStorage.setItem('fuelRecords', JSON.stringify(records));
             renderRecords();
             renderSummaries();
+            renderTotalsSummary();
           }
           editIndex = -1;
           document.getElementById('cancelEditBtn').style.display = 'none';
@@ -646,6 +680,7 @@ Your data will then sync across all devices!`);
             localStorage.setItem('fuelRecords', JSON.stringify(records));
             renderRecords();
             renderSummaries();
+            renderTotalsSummary();
           }
         }
         showToast();
