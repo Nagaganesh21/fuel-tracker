@@ -793,12 +793,27 @@ Your data will then sync across all devices!`);
 		categories[r.item] = (categories[r.item] || 0) + num(r.cost);
 	  });
 
-	  const topCategory = Object.entries(categories).sort((a,b)=>b[1]-a[1])[0];
-
-	  document.getElementById('costSummary').innerHTML = `
-		<b>Total Spent:</b> ₹${total.toFixed(2)}<br>
-		<b>This Month:</b> ₹${monthly.toFixed(2)}<br>
-		<b>Top Category:</b> ${topCategory ? topCategory[0] : '—'}
+		// Define fixed category order
+	  const order = ["Petrol", "Goods", "Maintenance", "Others"];
+	  let categoryLines = "";
+		
+	  // Print in fixed order first
+	  order.forEach(cat => {
+	    if (categories[cat]) {
+	      categoryLines += `<b>Total Spent for ${cat}:</b> ₹${categories[cat].toFixed(2)}<br>`;
+	      delete categories[cat];
+	    }
+	  });
+	
+	  // Print any extra categories not in the list
+	  Object.keys(categories).sort().forEach(cat => {
+	    categoryLines += `<b>Total Spent for ${cat}:</b> ₹${categories[cat].toFixed(2)}<br>`;
+	  });
+	
+	  document.getElementById("costSummary").innerHTML = `
+	    ${categoryLines}<br>
+	    <b>Grand Total:</b> ₹${total.toFixed(2)}<br>
+	    <b>This Month:</b> ₹${monthly.toFixed(2)}
 	  `;
 	};
 
