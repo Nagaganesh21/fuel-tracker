@@ -337,11 +337,7 @@
   </div>
 
   <main>
-    <div class="card" id="totalsSummaryCard">
-      <h3 style="margin-top: 0;">Current Fuel Status</h3>
-      <div id="totalsSummary"></div>
-    </div>
-
+  
     <!-- Toggle Buttons -->
     <div class="toggle-btn-group">
       <button id="toggleFuelBtn" class="toggle-btn" onclick="showEntryForm('fuel')">Fuel Meter Entry</button>
@@ -386,6 +382,10 @@
             <button type="button" id="cancelEditBtn" class="cancel-edit-btn" style="display:none;">Cancel Edit</button>
           </div>
         </form>
+		<div class="card" id="totalsSummaryCard">
+		  <h3 style="margin-top: 0;">Current Fuel Status</h3>
+		  <div id="totalsSummary"></div>
+		</div>
       </div>
       <div class="card">
         <div class="records-header">
@@ -414,6 +414,10 @@
 
     <!-- Cost Expenditure Entry Form & Table -->
     <div id="costSection" class="entry-form-section">
+	  <div class="card" id="costSummaryCard">
+		<h3 style="margin-top: 0;">Cost Summary</h3>
+		<div id="costSummary"></div>
+	  </div>
       <div class="card">
         <h2>Cost Expenditure</h2>
         <form id="costForm" class="form-grid" autocomplete="off">
@@ -759,7 +763,36 @@ Your data will then sync across all devices!`);
         </tr>`;
         tbody.innerHTML += row;
       });
+	  renderCostSummary();
     };
+	
+	window.renderCostSummary = function() {
+		if (!costRecords.length) {
+		document.getElementById('costSummary').innerHTML = `No cost data yet.<br><b>Total:</b> ₹0.00`;
+		return;
+	  }
+
+	  let total = 0;
+	  let monthly = 0;
+	  let categories = {};
+	  const currentMonth = new Date().toISOString().substring(0,7); // YYYY-MM
+
+	  costRecords.forEach(r => {
+		total += num(r.cost);
+		const recMonth = (r.date || '').substring(0,7);
+		if (recMonth === currentMonth) monthly += num(r.cost);
+		categories[r.item] = (categories[r.item] || 0) + num(r.cost);
+	  });
+
+	  const topCategory = Object.entries(categories).sort((a,b)=>b[1]-a[1])[0];
+
+	  document.getElementById('costSummary').innerHTML = `
+		<b>Total Spent:</b> ₹${total.toFixed(2)}<br>
+		<b>This Month:</b> ₹${monthly.toFixed(2)}<br>
+		<b>Top Category:</b> ${topCategory ? topCategory[0] : '—'}
+	  `;
+	};
+
 
     // --- Cost Edit/Delete actions ---
     window.editCostRecord = function(i) {
