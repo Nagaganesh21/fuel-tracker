@@ -454,7 +454,6 @@
 
     // --- Toggle Form Logic ---
     window.showEntryForm = function(type) {
-      // Hide both sections first
       document.getElementById('fuelMeterSection').classList.remove('active');
       document.getElementById('costSection').classList.remove('active');
       document.getElementById('toggleFuelBtn').classList.remove('active');
@@ -468,7 +467,6 @@
       }
     };
 
-    // Compute for each row: Fuel Used, Available Fuel (Fuel Added - Fuel Used), Remaining KM
     function computeAvailableFuel(records, mileage = BIKE_MILEAGE) {
       return records.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '')).map((r, i) => {
         const distance = num(r.distance);
@@ -656,7 +654,7 @@ Your data will then sync across all devices!`);
           <td>${num(r.end).toFixed(1)}</td>
           <td>${num(r.distance).toFixed(1)}</td>
           <td>${r.fuelUsed.toFixed(2)}</td>
-          <td>${num(r.fuel).toFixed(1)}</td>
+          <td>${num(r.fuel).toFixed(2)}</td>
           <td>₹${num(r.cost).toFixed(2)}</td>
           <td>${r.availableFuel.toFixed(2)}</td>
           <td>${r.remainingKm.toFixed(1)}</td>
@@ -789,13 +787,11 @@ Your data will then sync across all devices!`);
       initFirebase();
       document.getElementById('cancelEditBtn').addEventListener('click', window.cancelEdit);
       document.getElementById('cancelCostEditBtn').addEventListener('click', window.cancelCostEdit);
-      // Hide both by default, show fuel by default
       document.getElementById('fuelMeterSection').classList.remove('active');
       document.getElementById('costSection').classList.remove('active');
       showEntryForm('fuel');
     });
 
-    // --- Fuel Form Events (existing) ---
     document.getElementById('meterEnd').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
     document.getElementById('meterStart').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
     document.getElementById('fuel').addEventListener('input', calcRemainingKm);
@@ -807,7 +803,7 @@ Your data will then sync across all devices!`);
       let end = roundN(document.getElementById('meterEnd').value, 1);
       if (end < start) { alert('End meter must be greater than start meter'); updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline'); return; }
       let distance = roundN(end - start, 1);
-      let fuel = roundN(document.getElementById('fuel').value, 1);
+      let fuel = roundN(document.getElementById('fuel').value, 2); // TWO DECIMAL PLACES PATCHED
       let cost = roundN(document.getElementById('cost').value, 2);
       let remainingKm = roundN(clamp0(document.getElementById('remainingKm').value), 1);
       let date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
@@ -854,7 +850,7 @@ Your data will then sync across all devices!`);
       document.getElementById('meterStart').value = num(r.start).toFixed(1);
       document.getElementById('meterEnd').value = num(r.end).toFixed(1);
       document.getElementById('distance').value = num(r.distance).toFixed(1);
-      document.getElementById('fuel').value = num(r.fuel).toFixed(1);
+      document.getElementById('fuel').value = num(r.fuel).toFixed(2); // PATCHED TO TWO DECIMAL PLACES
       document.getElementById('cost').value = num(r.cost).toFixed(2);
       document.getElementById('remainingKm').value = clamp0(num(r.remainingKm)).toFixed(1);
       editIndex = i;
