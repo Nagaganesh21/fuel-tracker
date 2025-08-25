@@ -509,12 +509,14 @@
       const subDiv = document.getElementById("costSubItemDiv");
       const subSelect = document.getElementById("costSubItem");
     
-      if (subOptions[selected]) {
+      if (subOptions.hasOwnProperty(selected)) {
+        // show dropdown and load options
         subSelect.innerHTML = subOptions[selected]
           .map(opt => `<option value="${opt}">${opt}</option>`)
           .join("");
         subDiv.style.display = "block";
       } else {
+        // hide completely
         subDiv.style.display = "none";
         subSelect.innerHTML = "";
       }
