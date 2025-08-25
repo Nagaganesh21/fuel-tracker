@@ -3,415 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fuel Tracker</title>
+  <title>Fuel & Cost Tracker</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    header {
-      text-align: center;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(6px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    .sync-status {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: white;
-    }
-    .sync-online { background: #27ae60; }
-    .sync-offline { background: #e74c3c; }
-    .sync-syncing { background: #f39c12; }
-    .firebase-notice {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      color: #856404;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 10px;
-      text-align: center;
-    }
-    .firebase-notice.hidden { display: none; }
-    h1 { margin: 0; font-size: 2rem; }
-    main {
-      padding: 20px;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-      max-width: 900px;
-      margin: auto;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      animation: fadeIn 0.4s ease;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px 16px;
-      align-items: end;
-    }
-    .form-grid label {
-      display: block;
-      font-weight: 600;
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-    }
-    .form-grid input, .form-grid select {
-      width: 100%;
-      max-width: 140px;
-      padding: 6px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 8px 16px;
-      font-size: 0.9rem;
-      border-radius: 20px;
-      background: #4e54c8;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.3s, transform 0.2s;
-    }
-    button:hover {
-      background: #3b40a4;
-      transform: scale(1.05);
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-    button.danger { background: #e63946; }
-    button.danger:hover { background: #c92a37; }
-    button.success { background: #27ae60; }
-    button.success:hover { background: #2ecc71; }
-    .action-group {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-    }
-    .action-btn {
-      padding: 4px 10px;
-      font-size: 0.8rem;
-      border-radius: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .action-btn.edit { background: #2a9d8f; }
-    .action-btn.edit:hover { background: #21867a; }
-    .action-btn.delete { background: #e63946; }
-    .action-btn.delete:hover { background: #c92a37; }
-    .records-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .records-header h2 { margin: 0; }
-    .export-btn { background: #4e54c8; }
-    .export-btn:hover { background: #3b40a4; }
-    .settings { text-align: right; margin: 10px; }
-    .settings-toggle { background: #4e54c8; }
-    .settings-toggle:hover { background: #3b40a4; }
-    .settings-panel {
-      display: none;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin: 10px;
-    }
-    .settings-panel .action-btn {
-      padding: 6px 14px;
-      font-size: 0.85rem;
-      margin-top: 8px;
-    }
-    .settings-panel .action-btn.save { background: #2a9d8f; }
-    .settings-panel .action-btn.save:hover { background: #21867a; }
-    .settings-panel .action-btn.reset { background: #e63946; }
-    .settings-panel .action-btn.reset:hover { background: #c92a37; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+    .container { max-width: 1000px; margin: auto; padding: 20px; }
+    .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+    button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 6px; background: #4A4AFF; color: white; font-weight: bold; }
+    button:hover { background: #3333cc; }
+    .entry-form-section { display: none; }
+    .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background: #f0f0f0; }
-    .toast {
-      visibility: hidden;
-      min-width: 200px;
-      margin-left: -100px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 6px;
-      padding: 12px;
-      position: fixed;
-      z-index: 1;
-      left: 50%;
-      bottom: 30px;
-      font-size: 1rem;
-      opacity: 0;
-      transition: opacity 0.5s, visibility 0.5s;
-    }
-    .toast.show { visibility: visible; opacity: 1; }
-    .cancel-edit-btn {
-      background: #888;
-      margin-left: 8px;
-    }
-    .cancel-edit-btn:hover {
-      background: #555;
-    }
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(10px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-    /* MOBILE FIXES */
-    @media (max-width: 600px) {
-      .card {
-        padding: 6px !important;
-      }
-      .form-grid {
-        grid-template-columns: 1fr !important;
-        gap: 14px !important;
-        padding: 6px;
-      }
-      .form-grid input,
-      .form-grid select,
-      .form-grid label {
-        max-width: 100% !important;
-        box-sizing: border-box;
-      }
-      .form-grid > div {
-        width: 100%;
-      }
-      button[type="submit"], .cancel-edit-btn {
-        width: 100%;
-        margin-top: 10px;
-        justify-content: center;
-        border-radius: 14px;
-        box-sizing: border-box;
-      }
-    }
-    #totalsSummaryCard {
-      background: #f5f6fa; 
-      color: #222; 
-      border: 2px solid #4e54c8; 
-      margin-bottom: 10px;
-      padding-top: 10px;
-      padding-bottom: 10px;
-      text-align: center;
-    }
-    #totalsSummary {
-      font-size: 1.1rem; 
-      font-weight: 600;
-    }
-    /* --- Add some styles for toggle buttons and hidden forms --- */
-    .toggle-btn-group {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .toggle-btn {
-      padding: 8px 18px;
-      border-radius: 20px;
-      border: none;
-      font-weight: 600;
-      font-size: 1rem;
-      background: #a1b5ee;
-      color: #333;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
-    .toggle-btn.active {
-      background: #4e54c8;
-      color: #fff;
-    }
-    .entry-form-section {
-      display: none;
-    }
-    .entry-form-section.active {
-      display: block;
-      animation: fadeIn 0.4s ease;
-    }
-    /* --- Cost Table styles --- */
-    #costTable th, #costTable td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: center;
-    }
-    #costTable th {
-      background: #f0f0f0;
-    }
-    /* --- Fuel Table styles --- */
-    #fuelMeterTable th, #fuelMeterTable td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: center;
-    }
-    #fuelMeterTable th {
-      background: #f0f0f0;
-    }
-    /* Fuel Meter Table Improvements */
-#fuelMeterTable th,
-#fuelMeterTable td {
-  padding: 6px 8px;
-  font-size: 0.95rem;
-  white-space: nowrap;
-}
-
-#fuelMeterTable td {
-  vertical-align: middle;
-}
-
-/* Compact Action Buttons (Edit/Delete) */
-.action-btn {
-  padding: 2px 10px;
-  font-size: 0.85rem;
-  gap: 4px;
-  flex-direction: row !important; /* Icon and text side-by-side */
-  min-width: 60px;
-  justify-content: center;
-}
-
-.action-group {
-  gap: 4px;
-}
-
-@media (max-width: 600px) {
-  #fuelMeterTable th,
-  #fuelMeterTable td {
-    font-size: 0.78rem;
-    padding: 4px 3px;
-	  }
-	  .action-btn span {
-	    display: none; /* Hide text on small screens, show only icon */
-	  }
-	  .action-btn {
-	    min-width: 32px;
-	    font-size: 1.1em;
-	  }
-	}
-	  #costSummaryCard {
-		  border: 2px solid #4A4AFF;
-		  border-radius: 8px;
-		  padding: 15px;
-		  margin-bottom: 15px;
-		  background: #f9f9ff;
-		  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-		}
-
+    th { background: #4A4AFF; color: white; }
+    .action-group { display: flex; gap: 5px; justify-content: center; }
+    .action-btn { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em; }
+    .action-btn.edit { background: #ffc107; }
+    .action-btn.delete { background: #dc3545; color: white; }
+    #totalsSummaryCard, #costSummaryCard { border: 2px solid #4A4AFF; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #f9f9ff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    #totalsSummary, #costSummary { text-align:center; font-size:1.1em; line-height:1.8; }
   </style>
 </head>
 <body>
-  <header>
-    <div id="syncStatus" class="sync-status sync-offline">🔴 Offline</div>
-    <h1>⛽ Fuel Tracker</h1>
-  </header>
-
-  <div id="firebaseNotice" class="firebase-notice">
-    ⚠️ <strong>Firebase Setup Required:</strong> Configure Firebase for cloud sync across devices.
-    <button onclick="showFirebaseSetup()" class="success">Setup Guide</button>
-  </div>
-
-  <div class="settings">
-    <button onclick="toggleSettings()" class="settings-toggle" aria-label="Toggle settings">⚙️ Settings</button>
-  </div>
-  <div class="settings-panel" id="settingsPanel">
-    <label for="bikeMileage">Bike Mileage (km/L)</label>
-    <input type="number" id="bikeMileage" step="0.1" aria-label="Bike Mileage">
-    <div class="action-group" style="margin-top:10px;">
-      <button onclick="saveSettings()" class="action-btn save">💾 Save Settings</button>
-      <button onclick="resetApp()" class="action-btn reset">🗑️ Reset App</button>
-    </div>
-  </div>
-
-  <main>
-  
-    <!-- Toggle Buttons -->
-    <div class="toggle-btn-group">
-      <button id="toggleFuelBtn" class="toggle-btn" onclick="showEntryForm('fuel')">Fuel Meter Entry</button>
-      <button id="toggleCostBtn" class="toggle-btn" onclick="showEntryForm('cost')">Cost Expenditure</button>
+  <div class="container">
+    <div class="btn-group">
+      <button onclick="showSection('fuelMeterSection')">Fuel Meter Entry</button>
+      <button onclick="showSection('costSection')">Cost Expenditure</button>
     </div>
 
-    <!-- Fuel Meter Entry Form & Table -->
+    <!-- Fuel Section -->
     <div id="fuelMeterSection" class="entry-form-section">
-		<div class="card" id="totalsSummaryCard">
-		 <h3 style="margin-top: 0;">Current Fuel Status</h3>
-		 <div id="totalsSummary"></div>
-		</div>
-      <div class="card">
-        <h2>Fuel Meter Entry</h2>
-        <form id="fuelForm" class="form-grid" autocomplete="off">
-          <div>
-            <label for="date">Date</label>
-            <input type="date" id="date" required aria-label="Date">
-          </div>
-          <div>
-            <label for="meterStart">Meter Start</label>
-            <input type="number" id="meterStart" step="0.1" required aria-label="Meter Start">
-          </div>
-          <div>
-            <label for="meterEnd">Meter End</label>
-            <input type="number" id="meterEnd" step="0.1" required aria-label="Meter End">
-          </div>
-          <div>
-            <label for="distance">Distance</label>
-            <input type="number" id="distance" step="0.1" readonly aria-label="Distance">
-          </div>
-          <div>
-            <label for="fuel">Fuel Added (liters)</label>
-            <input type="number" id="fuel" step="0.01" required aria-label="Fuel Added in liters">
-          </div>
-          <div>
-            <label for="cost">Cost (₹)</label>
-            <input type="number" id="cost" step="0.01" required aria-label="Cost in rupees">
-          </div>
-          <div>
-            <label for="remainingKm">Remaining KM</label>
-            <input type="number" id="remainingKm" step="0.1" readonly aria-label="Remaining Kilometers">
-          </div>
-          <div style="grid-column: 1 / -1; text-align:center;">
-            <button type="submit" id="submitBtn">💾 Save Entry</button>
-            <button type="button" id="cancelEditBtn" class="cancel-edit-btn" style="display:none;">Cancel Edit</button>
-          </div>
-        </form>
+      <div class="card" id="totalsSummaryCard">
+        <h3 style="margin-top: 0; text-align:center;">Current Fuel Status</h3>
+        <div id="totalsSummary"></div>
       </div>
       <div class="card">
-        <div class="records-header">
-          <h2>Fuel Meter Records</h2>
-          <button onclick="exportCSV()" class="export-btn" aria-label="Export as CSV">📥 Export CSV</button>
-        </div>
-        <table id="fuelMeterTable">
+        <h2>Fuel Meter Entry</h2>
+        <form id="fuelForm">
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <input type="date" id="date" required>
+            <input type="number" id="meterStart" placeholder="Meter Start" required>
+            <input type="number" id="meterEnd" placeholder="Meter End" required>
+            <input type="number" id="distance" placeholder="Distance" readonly>
+            <input type="number" id="fuel" placeholder="Fuel (liters)" required>
+            <input type="number" id="cost" placeholder="Cost (₹)" required>
+            <input type="number" id="remainingKm" placeholder="Remaining KM" required>
+            <button type="submit">Save</button>
+          </div>
+        </form>
+        <table id="fuelTable">
           <thead>
             <tr>
               <th>Date</th>
-              <th>Start</th>
-              <th>End</th>
+              <th>Meter Start</th>
+              <th>Meter End</th>
               <th>Distance</th>
-              <th>Fuel Used</th>
-              <th>Fuel Added</th>
-              <th>Cost</th>
-              <th>Available Fuel</th>
+              <th>Fuel (L)</th>
+              <th>Cost (₹)</th>
               <th>Remaining KM</th>
               <th>Actions</th>
             </tr>
@@ -421,46 +68,31 @@
       </div>
     </div>
 
-    <!-- Cost Expenditure Entry Form & Table -->
+    <!-- Cost Section -->
     <div id="costSection" class="entry-form-section">
-	  <div class="card" id="costSummaryCard">
-		<h3 style="margin-top: 0; text-align:center;">Cost Summary</h3>
- 		<div id="costSummary" style="text-align:center; font-size:1.1em; line-height:1.8;"></div>
-	  </div>
+      <div class="card" id="costSummaryCard">
+        <h3 style="margin-top: 0; text-align:center;">Cost Summary</h3>
+        <div id="costSummary"></div>
+      </div>
       <div class="card">
         <h2>Cost Expenditure</h2>
-        <form id="costForm" class="form-grid" autocomplete="off">
-          <div>
-            <label for="costDate">Date</label>
-            <input type="date" id="costDate" required aria-label="Cost Date">
-          </div>
-          <div>
-            <label for="costItem">Item</label>
-            <select id="costItem" required aria-label="Cost Item">
+        <form id="costForm">
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <input type="date" id="costDate" required>
+            <select id="costItem" required>
               <option value="Petrol">Petrol</option>
               <option value="Goods">Goods</option>
               <option value="Maintenance">Maintenance</option>
               <option value="Others">Others</option>
             </select>
-          </div>
-          <div id="costSubItemDiv" style="display:none;">
-            <label for="costSubItem">Details</label>
-            <select id="costSubItem" aria-label="Cost Sub Item">
-              <!-- Options will be loaded dynamically -->
-            </select>
-          </div>
-          <div>
-            <label for="costAmount">Cost (₹)</label>
-            <input type="number" id="costAmount" step="0.01" required aria-label="Cost Amount">
-          </div>
-          <div style="grid-column: 1 / -1; text-align:center;">
-            <button type="submit" id="costSubmitBtn">💾 Save Cost</button>
-            <button type="button" id="cancelCostEditBtn" class="cancel-edit-btn" style="display:none;">Cancel Edit</button>
+            <div id="costSubItemDiv" style="display:none;">
+              <label for="costSubItem">Details</label>
+              <select id="costSubItem" aria-label="Cost Sub Item"></select>
+            </div>
+            <input type="number" id="costAmount" placeholder="Cost (₹)" required>
+            <button type="submit">Save</button>
           </div>
         </form>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom:4px;">Cost Expenditure Records</h3>
         <table id="costTable">
           <thead>
             <tr>
@@ -475,599 +107,204 @@
         </table>
       </div>
     </div>
-
-    <div class="card">
-      <h2>Monthly Summaries</h2>
-      <div id="monthlySummary"></div>
-    </div>
-  </main>
-
-  <div id="toast" class="toast">✅ Saved successfully</div>
+  </div>
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    let fuelRecords = [];
+    let costRecords = [];
+    let editFuelIndex = -1;
+    let editCostIndex = -1;
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB-Og_0PuU-mQbMu4YpbdQlxBTP4Kexuqg",
-      authDomain: "fuel-tracker-2982b.firebaseapp.com",
-      projectId: "fuel-tracker-2982b",
-      storageBucket: "fuel-tracker-2982b.appspot.com",
-      messagingSenderId: "12406726460",
-      appId: "1:12406726460:web:d0a9bdefe54cc957894839"
+    const num = (v) => Number(v || 0);
+
+    function showSection(id) {
+      document.querySelectorAll('.entry-form-section').forEach(sec => sec.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+
+    // ---------------- Fuel ----------------
+    document.getElementById('fuelForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let date = document.getElementById('date').value;
+      let meterStart = num(document.getElementById('meterStart').value);
+      let meterEnd = num(document.getElementById('meterEnd').value);
+      let distance = meterEnd - meterStart;
+      document.getElementById('distance').value = distance;
+      let fuel = num(document.getElementById('fuel').value);
+      let cost = num(document.getElementById('cost').value);
+      let remainingKm = num(document.getElementById('remainingKm').value);
+
+      let record = { date, meterStart, meterEnd, distance, fuel, cost, remainingKm };
+
+      if (editFuelIndex >= 0) {
+        fuelRecords[editFuelIndex] = record;
+        editFuelIndex = -1;
+      } else {
+        fuelRecords.push(record);
+      }
+
+      this.reset();
+      renderFuelTable();
+      renderFuelSummary();
+    });
+
+    window.renderFuelTable = function() {
+      let tbody = document.querySelector('#fuelTable tbody');
+      tbody.innerHTML = '';
+      fuelRecords.forEach((rec, idx) => {
+        let row = `<tr>
+          <td>${rec.date}</td>
+          <td>${rec.meterStart}</td>
+          <td>${rec.meterEnd}</td>
+          <td>${rec.distance}</td>
+          <td>${rec.fuel}</td>
+          <td>₹${rec.cost.toFixed(2)}</td>
+          <td>${rec.remainingKm}</td>
+          <td>
+            <div class="action-group">
+              <button onclick="editFuelRecord(${idx})" class="action-btn edit">✏️ Edit</button>
+              <button onclick="deleteFuelRecord(${idx})" class="action-btn delete">🗑️ Delete</button>
+            </div>
+          </td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
     };
 
-    let BIKE_MILEAGE = Number(localStorage.getItem('bikeMileage')) || 40;
-    let records = [];
-    let editIndex = -1;
-    let app, db;
-    let isFirebaseConfigured = false;
+    window.renderFuelSummary = function() {
+      if (!fuelRecords.length) {
+        document.getElementById('totalsSummary').innerHTML = `<b>No fuel data yet.</b>`;
+        return;
+      }
 
-    // --- Cost Expenditure State ---
-    let costRecords = [];
-    let costEditIndex = -1;
+      let totalFuel = fuelRecords.reduce((a, r) => a + num(r.fuel), 0);
+      let totalCost = fuelRecords.reduce((a, r) => a + num(r.cost), 0);
+      let totalDistance = fuelRecords.reduce((a, r) => a + num(r.distance), 0);
 
-    // Utility functions
-    const num = (v, def = 0) => { v = Number(v); return Number.isFinite(v) ? v : def; };
-    const roundN = (v, n = 1) => Number(num(v, 0).toFixed(n));
-    const clamp0 = v => Math.max(0, v);
+      document.getElementById('totalsSummary').innerHTML = `
+        <b>Total Fuel:</b> ${totalFuel.toFixed(2)} L<br>
+        <b>Total Cost:</b> ₹${totalCost.toFixed(2)}<br>
+        <b>Total Distance:</b> ${totalDistance.toFixed(2)} km
+      `;
+    };
 
+    window.editFuelRecord = function(i) {
+      let rec = fuelRecords[i];
+      document.getElementById('date').value = rec.date;
+      document.getElementById('meterStart').value = rec.meterStart;
+      document.getElementById('meterEnd').value = rec.meterEnd;
+      document.getElementById('distance').value = rec.distance;
+      document.getElementById('fuel').value = rec.fuel;
+      document.getElementById('cost').value = rec.cost;
+      document.getElementById('remainingKm').value = rec.remainingKm;
+      editFuelIndex = i;
+    };
+
+    window.deleteFuelRecord = function(i) {
+      fuelRecords.splice(i, 1);
+      renderFuelTable();
+      renderFuelSummary();
+    };
+
+    // ---------------- Cost ----------------
     const subOptions = {
       "Goods": ["Powerbank", "Mobile Holder"],
       "Maintenance": ["Service", "Oil Change", "Spare Parts"]
     };
 
-      document.getElementById("costItem").addEventListener("change", function() {
+    document.getElementById("costItem").addEventListener("change", function() {
       const selected = this.value;
       const subDiv = document.getElementById("costSubItemDiv");
       const subSelect = document.getElementById("costSubItem");
-    
+
       if (subOptions.hasOwnProperty(selected)) {
-        // show dropdown and load options
         subSelect.innerHTML = subOptions[selected]
           .map(opt => `<option value="${opt}">${opt}</option>`)
           .join("");
         subDiv.style.display = "block";
       } else {
-        // hide completely
         subDiv.style.display = "none";
         subSelect.innerHTML = "";
       }
     });
 
-    // --- Toggle Form Logic ---
-    window.showEntryForm = function(type) {
-      document.getElementById('fuelMeterSection').classList.remove('active');
-      document.getElementById('costSection').classList.remove('active');
-      document.getElementById('toggleFuelBtn').classList.remove('active');
-      document.getElementById('toggleCostBtn').classList.remove('active');
-      if (type === 'fuel') {
-        document.getElementById('fuelMeterSection').classList.add('active');
-        document.getElementById('toggleFuelBtn').classList.add('active');
-      } else if (type === 'cost') {
-        document.getElementById('costSection').classList.add('active');
-        document.getElementById('toggleCostBtn').classList.add('active');
-      }
-    };
+    document.getElementById('costForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let date = document.getElementById('costDate').value;
+      let item = document.getElementById('costItem').value;
+      let subItem = document.getElementById('costSubItem').value || '';
+      let cost = num(document.getElementById('costAmount').value);
 
-    function computeAvailableFuel(records, mileage = BIKE_MILEAGE) {
-      return records.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '')).map((r, i) => {
-        const distance = num(r.distance);
-        const fuelAdded = num(r.fuel);
-        const fuelUsed = mileage > 0 ? distance / mileage : 0;
-        const availableFuel = roundN(fuelAdded - fuelUsed, 2);
-        const remainingKm = roundN(availableFuel * mileage, 1);
-        const origIdx = records.findIndex(rr => rr.date === r.date && rr.start === r.start && rr.end === r.end);
-        return {
-          ...r,
-          fuelUsed: roundN(fuelUsed, 2),
-          availableFuel: roundN(availableFuel, 2),
-          remainingKm,
-          origIdx
-        };
-      });
-    }
+      let record = { date, item, subItem, cost };
 
-    function renderTotalsSummary() {
-      const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
-      if (computedRecords.length === 0) {
-        document.getElementById('totalsSummary').innerHTML =
-          `No data yet.<br>
-           <b>Available Fuel:</b> 0.00 liters<br>
-           <b>Remaining KM:</b> 0.0 km`;
-        return;
-      }
-      let totalFuelAdded = 0;
-      let totalFuelUsed = 0;
-      computedRecords.forEach(r => {
-        totalFuelAdded += Number(r.fuel) || 0;
-        totalFuelUsed += Number(r.fuelUsed) || 0;
-      });
-      let totalAvailableFuel = Math.max(0, totalFuelAdded - totalFuelUsed);
-      let totalRemainingKm = Math.round(totalAvailableFuel * BIKE_MILEAGE * 10) / 10;
-      document.getElementById('totalsSummary').innerHTML =
-        `<b>Available Fuel:</b> ${totalAvailableFuel.toFixed(2)} liters<br>
-         <b>Remaining KM:</b> ${totalRemainingKm.toFixed(1)} km`;
-    }
-
-    function initFirebase() {
-      try {
-        if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "your-api-key-here") {
-          loadFromLocalStorage();
-          loadCostFromLocalStorage();
-          return;
-        }
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        isFirebaseConfigured = true;
-        document.getElementById('firebaseNotice').classList.add('hidden');
-        loadFromFirebase();
-        loadCostFromFirebase();
-        updateSyncStatus('online');
-      } catch (error) {
-        updateSyncStatus('offline');
-        loadFromLocalStorage();
-        loadCostFromLocalStorage();
-      }
-    }
-
-    // --- Fuel Records ---
-    function loadFromFirebase() {
-      const q = query(collection(db, 'fuelRecords'), orderBy('date', 'asc'));
-      onSnapshot(q, (querySnapshot) => {
-        records = [];
-        querySnapshot.forEach((docSnap) => {
-          records.push({ firebaseId: docSnap.id, ...docSnap.data() });
-        });
-        migrateRecords();
-        renderFuelMeterTable();
-        renderSummaries();
-        renderTotalsSummary();
-      }, () => {
-        loadFromLocalStorage();
-      });
-    }
-    function loadFromLocalStorage() {
-      records = JSON.parse(localStorage.getItem('fuelRecords')) || [];
-      migrateRecords();
-      renderFuelMeterTable();
-      renderSummaries();
-      renderTotalsSummary();
-    }
-
-    // --- Cost Expenditure Records ---
-    function loadCostFromFirebase() {
-      const q = query(collection(db, 'costRecords'), orderBy('date', 'asc'));
-      onSnapshot(q, (querySnapshot) => {
-        costRecords = [];
-        querySnapshot.forEach((docSnap) => {
-          costRecords.push({ firebaseId: docSnap.id, ...docSnap.data() });
-        });
-        renderCostTable();
-      }, () => {
-        loadCostFromLocalStorage();
-      });
-    }
-    function loadCostFromLocalStorage() {
-      costRecords = JSON.parse(localStorage.getItem('costRecords')) || [];
-      renderCostTable();
-    }
-
-    function updateSyncStatus(status) {
-      const statusEl = document.getElementById('syncStatus');
-      const submitBtn = document.getElementById('submitBtn');
-      const costSubmitBtn = document.getElementById('costSubmitBtn');
-      if (status === 'online') {
-        statusEl.className = 'sync-status sync-online';
-        statusEl.innerHTML = '🟢 Online';
-        submitBtn.disabled = false;
-        costSubmitBtn.disabled = false;
-      } else if (status === 'syncing') {
-        statusEl.className = 'sync-status sync-syncing';
-        statusEl.innerHTML = '🟡 Syncing...';
-        submitBtn.disabled = true;
-        costSubmitBtn.disabled = true;
+      if (editCostIndex >= 0) {
+        costRecords[editCostIndex] = record;
+        editCostIndex = -1;
       } else {
-        statusEl.className = 'sync-status sync-offline';
-        statusEl.innerHTML = '🔴 Offline';
-        submitBtn.disabled = false;
-        costSubmitBtn.disabled = false;
+        costRecords.push(record);
       }
-    }
 
-    function migrateRecords() {
-      let changed = false;
-      records = records.map(r => {
-        const start = num(r.start);
-        const end = num(r.end);
-        const distance = num(r.distance);
-        const fuel = num(r.fuel);
-        const cost = num(r.cost);
-        let remainingKm = r.remainingKm;
-        if (!Number.isFinite(remainingKm)) {
-          remainingKm = roundN(clamp0((fuel * BIKE_MILEAGE) - distance), 1);
-          changed = true;
-        } else {
-          remainingKm = roundN(clamp0(remainingKm), 1);
-        }
-        return { ...r, start, end, distance, fuel, cost, remainingKm };
-      });
-      if (changed && !isFirebaseConfigured) {
-        localStorage.setItem('fuelRecords', JSON.stringify(records));
-      }
-    }
+      this.reset();
+      document.getElementById('costSubItemDiv').style.display = 'none';
+      renderCostTable();
+    });
 
-    window.showFirebaseSetup = function() {
-      alert(`Firebase Setup Instructions:
-
-1. Go to: https://console.firebase.google.com/
-2. Create a new project: 'fuel-tracker'
-3. Enable Firestore Database (test mode)
-4. Get your config from Project Settings > Web App
-5. Replace the firebaseConfig in the code with your config
-6. Update your GitHub repository
-
-Your data will then sync across all devices!`);
-    };
-
-    window.calcDistance = function() {
-      let start = num(document.getElementById('meterStart').value);
-      let end = num(document.getElementById('meterEnd').value);
-      let dist = end - start;
-      document.getElementById('distance').value = dist > 0 ? dist.toFixed(1) : 0;
-    };
-
-    window.calcRemainingKm = function() {
-      let distance = num(document.getElementById('distance').value);
-      let fuel = num(document.getElementById('fuel').value);
-      let possible_km = fuel * BIKE_MILEAGE;
-      let remaining_km = clamp0(possible_km - distance);
-      document.getElementById('remainingKm').value = remaining_km.toFixed(1);
-    };
-
-    // --- Fuel Meter Table rendering + actions ---
-    window.renderFuelMeterTable = function() {
-      let tbody = document.querySelector('#fuelMeterTable tbody');
-      tbody.innerHTML = '';
-      const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
-      computedRecords.forEach((r, idx) => {
-        let row = `<tr>
-          <td>${r.date || ''}</td>
-          <td>${num(r.start).toFixed(1)}</td>
-          <td>${num(r.end).toFixed(1)}</td>
-          <td>${num(r.distance).toFixed(1)}</td>
-          <td>${r.fuelUsed.toFixed(2)}</td>
-          <td>${num(r.fuel).toFixed(2)}</td>
-          <td>₹${num(r.cost).toFixed(2)}</td>
-          <td>${r.availableFuel.toFixed(2)}</td>
-          <td>${r.remainingKm.toFixed(1)}</td>
-          <td>
-            <div class="action-group">
-              <button onclick="editRecord(${r.origIdx})" class="action-btn edit" aria-label="Edit entry">✏️<span>Edit</span></button>
-              <button onclick="deleteRecord(${r.origIdx})" class="action-btn delete" aria-label="Delete entry">🗑️<span>Delete</span></button>
-            </div>
-          </td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
-      renderTotalsSummary();
-    };
-
-    // --- Cost Table rendering + actions ---
     window.renderCostTable = function() {
       let tbody = document.querySelector('#costTable tbody');
       tbody.innerHTML = '';
-      (costRecords || []).forEach((rec, idx) => {
+      costRecords.forEach((rec, idx) => {
         let row = `<tr>
-          <td>${rec.date || ''}</td>
-          <td>${rec.item || ''}</td>
-          <td>${rec.subItem || ''}</td>
-          <td>₹${num(rec.cost).toFixed(2)}</td>
+          <td>${rec.date}</td>
+          <td>${rec.item}</td>
+          <td>${rec.subItem}</td>
+          <td>₹${rec.cost.toFixed(2)}</td>
           <td>
             <div class="action-group">
-              <button onclick="editCostRecord(${idx})" class="action-btn edit" aria-label="Edit cost entry">✏️ Edit</button>
-              <button onclick="deleteCostRecord(${idx})" class="action-btn delete" aria-label="Delete cost entry">🗑️ Delete</button>
+              <button onclick="editCostRecord(${idx})" class="action-btn edit">✏️ Edit</button>
+              <button onclick="deleteCostRecord(${idx})" class="action-btn delete">🗑️ Delete</button>
             </div>
           </td>
         </tr>`;
         tbody.innerHTML += row;
       });
-	  renderCostSummary();
+      renderCostSummary();
     };
-	
-	window.renderCostSummary = function() {
-		if (!costRecords.length) {
-		document.getElementById('costSummary').innerHTML = `No cost data yet.<br><b>Total:</b> ₹0.00`;
-		return;
-	  }
 
-	  let total = 0;
-	  let monthly = 0;
-	  let categories = {};
-	  const currentMonth = new Date().toISOString().substring(0,7); // YYYY-MM
+    window.renderCostSummary = function() {
+      if (!costRecords.length) {
+        document.getElementById('costSummary').innerHTML = `<b>No cost data yet.</b>`;
+        return;
+      }
 
-	  costRecords.forEach(r => {
-		total += num(r.cost);
-		const recMonth = (r.date || '').substring(0,7);
-		if (recMonth === currentMonth) monthly += num(r.cost);
-		categories[r.item] = (categories[r.item] || 0) + num(r.cost);
-	  });
+      // Group by category
+      let categories = {};
+      costRecords.forEach(r => {
+        categories[r.item] = (categories[r.item] || 0) + num(r.cost);
+      });
 
-	  const topCategory = Object.entries(categories).sort((a,b)=>b[1]-a[1])[0];
+      // Show side by side
+      let summaryHTML = `<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;">`;
+      Object.keys(categories).forEach(cat => {
+        summaryHTML += `<div><b>Total Spent ${cat}:</b> ₹${categories[cat].toFixed(2)}</div>`;
+      });
+      summaryHTML += `</div>`;
 
-	  document.getElementById('costSummary').innerHTML = `
-		<b>Total Spent:</b> ₹${total.toFixed(2)}<br>
-		<b>This Month:</b> ₹${monthly.toFixed(2)}<br>
-		<b>Top Category:</b> ${topCategory ? topCategory[0] : '—'}
-	  `;
-	};
+      document.getElementById('costSummary').innerHTML = summaryHTML;
+    };
 
-
-    // --- Cost Edit/Delete actions ---
     window.editCostRecord = function(i) {
       let rec = costRecords[i];
-      document.getElementById('costDate').value = rec.date || new Date().toISOString().split('T')[0];
-      document.getElementById('costItem').value = rec.item || 'Petrol';
-      document.getElementById('costItem').dispatchEvent(new Event('change')); // load sub dropdown
-      document.getElementById('costSubItem').value = rec.subItem || '';
-      document.getElementById('costAmount').value = num(rec.cost).toFixed(2);
-      costEditIndex = i;
-      document.getElementById('cancelCostEditBtn').style.display = 'inline-block';
-      window.showEntryForm('cost');
+      document.getElementById('costDate').value = rec.date;
+      document.getElementById('costItem').value = rec.item;
+      document.getElementById('costItem').dispatchEvent(new Event('change'));
+      if (rec.subItem) document.getElementById('costSubItem').value = rec.subItem;
+      document.getElementById('costAmount').value = rec.cost;
+      editCostIndex = i;
     };
 
-    window.cancelCostEdit = function() {
-      costEditIndex = -1;
-      document.getElementById('costForm').reset();
-      document.getElementById('costDate').value = new Date().toISOString().split('T')[0];
-      document.getElementById('costSubItem').innerHTML = '';
-      document.getElementById('costSubItemDiv').style.display = 'none';
-    };
-
-    window.deleteCostRecord = async function(i) {
-      if (confirm('Delete this cost record?')) {
-        try {
-          updateSyncStatus('syncing');
-          if (isFirebaseConfigured && db && costRecords[i].firebaseId) {
-            await deleteDoc(doc(db, 'costRecords', costRecords[i].firebaseId));
-          } else if (!isFirebaseConfigured) {
-            costRecords.splice(i, 1);
-            localStorage.setItem('costRecords', JSON.stringify(costRecords));
-            renderCostTable();
-          }
-          updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline');
-        } catch {
-          alert("Failed to delete cost record. Please try again.");
-          updateSyncStatus('offline');
-        }
-      }
-    };
-
-    window.exportCSV = function() {
-      let csv = 'Date,Start,End,Distance,Fuel Used,Fuel Added,Cost,Available Fuel,Remaining KM\n';
-      const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
-      computedRecords.forEach(r => {
-        csv += `${r.date},${r.start},${r.end},${r.distance},${r.fuelUsed},${r.fuel},${r.cost},${r.availableFuel},${r.remainingKm}\n`;
-      });
-      let blob = new Blob([csv], { type: 'text/csv' });
-      let link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'fuel-records.csv';
-      link.click();
-    };
-
-    window.showToast = function(msg) {
-      let toast = document.getElementById('toast');
-      toast.innerText = msg || '✅ Saved successfully';
-      toast.className = 'toast show';
-      setTimeout(() => toast.className = 'toast', 2000);
-    };
-
-    window.toggleSettings = function() {
-      let p = document.getElementById('settingsPanel');
-      p.style.display = p.style.display === 'block' ? 'none' : 'block';
-    };
-
-    window.saveSettings = function() {
-      const mileageInput = num(document.getElementById('bikeMileage').value, 40);
-      BIKE_MILEAGE = mileageInput > 0 ? mileageInput : 40;
-      localStorage.setItem('bikeMileage', BIKE_MILEAGE);
-      alert('Bike mileage updated to ' + BIKE_MILEAGE + ' km/L');
-      calcRemainingKm();
-      renderFuelMeterTable();
-      renderSummaries();
-      renderTotalsSummary();
-    };
-
-    window.resetApp = function() {
-      if (confirm('This will delete ALL records. Continue?')) {
-        if (isFirebaseConfigured) {
-          alert("Please delete records individually when using cloud sync for safety.");
-        } else {
-          records = [];
-          costRecords = [];
-          localStorage.removeItem('fuelRecords');
-          localStorage.removeItem('costRecords');
-          renderFuelMeterTable();
-          renderSummaries();
-          renderTotalsSummary();
-          renderCostTable();
-        }
-      }
-    };
-
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('bikeMileage').value = BIKE_MILEAGE;
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
-      document.getElementById('costDate').value = new Date().toISOString().split('T')[0];
-      initFirebase();
-      document.getElementById('cancelEditBtn').addEventListener('click', window.cancelEdit);
-      document.getElementById('cancelCostEditBtn').addEventListener('click', window.cancelCostEdit);
-      document.getElementById('fuelMeterSection').classList.remove('active');
-      document.getElementById('costSection').classList.remove('active');
-      showEntryForm('fuel');
-    });
-
-    document.getElementById('meterEnd').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
-    document.getElementById('meterStart').addEventListener('input', () => { calcDistance(); calcRemainingKm(); });
-    document.getElementById('fuel').addEventListener('input', calcRemainingKm);
-
-    document.getElementById('fuelForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      updateSyncStatus('syncing');
-      let start = roundN(document.getElementById('meterStart').value, 1);
-      let end = roundN(document.getElementById('meterEnd').value, 1);
-      if (end < start) { alert('End meter must be greater than start meter'); updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline'); return; }
-      let distance = roundN(end - start, 1);
-      let fuel = roundN(document.getElementById('fuel').value, 2); // TWO DECIMAL PLACES PATCHED
-      let cost = roundN(document.getElementById('cost').value, 2);
-      let remainingKm = roundN(clamp0(document.getElementById('remainingKm').value), 1);
-      let date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
-      let record = { date, start, end, distance, fuel, cost, remainingKm };
-      try {
-        if (editIndex >= 0) {
-          if (isFirebaseConfigured && db && records[editIndex].firebaseId) {
-            await updateDoc(doc(db, 'fuelRecords', records[editIndex].firebaseId), record);
-          } else if (!isFirebaseConfigured) {
-            records[editIndex] = record;
-            localStorage.setItem('fuelRecords', JSON.stringify(records));
-            renderFuelMeterTable();
-            renderSummaries();
-            renderTotalsSummary();
-          }
-          editIndex = -1;
-          document.getElementById('cancelEditBtn').style.display = 'none';
-        } else {
-          if (isFirebaseConfigured && db) {
-            await addDoc(collection(db, 'fuelRecords'), record);
-          } else if (!isFirebaseConfigured) {
-            records.push(record);
-            localStorage.setItem('fuelRecords', JSON.stringify(records));
-            renderFuelMeterTable();
-            renderSummaries();
-            renderTotalsSummary();
-          }
-        }
-        showToast('✅ Saved successfully');
-        e.target.reset();
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline');
-        window.calcDistance();
-        window.calcRemainingKm();
-      } catch {
-        alert("Failed to save record. Please try again.");
-        updateSyncStatus('offline');
-      }
-    });
-
-    window.editRecord = function(i) {
-      let r = records[i];
-      document.getElementById('date').value = r.date || new Date().toISOString().split('T')[0];
-      document.getElementById('meterStart').value = num(r.start).toFixed(1);
-      document.getElementById('meterEnd').value = num(r.end).toFixed(1);
-      document.getElementById('distance').value = num(r.distance).toFixed(1);
-      document.getElementById('fuel').value = num(r.fuel).toFixed(2); // PATCHED TO TWO DECIMAL PLACES
-      document.getElementById('cost').value = num(r.cost).toFixed(2);
-      document.getElementById('remainingKm').value = clamp0(num(r.remainingKm)).toFixed(1);
-      editIndex = i;
-      document.getElementById('cancelEditBtn').style.display = 'inline-block';
-      window.showEntryForm('fuel');
-    };
-
-    window.cancelEdit = function() {
-      editIndex = -1;
-      document.getElementById('fuelForm').reset();
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
-      document.getElementById('cancelEditBtn').style.display = 'none';
-      window.calcDistance();
-      window.calcRemainingKm();
-    };
-
-    window.deleteRecord = async function(i) {
-      if (confirm('Delete this record?')) {
-        try {
-          updateSyncStatus('syncing');
-          if (isFirebaseConfigured && db && records[i].firebaseId) {
-            await deleteDoc(doc(db, 'fuelRecords', records[i].firebaseId));
-          } else if (!isFirebaseConfigured) {
-            records.splice(i, 1);
-            localStorage.setItem('fuelRecords', JSON.stringify(records));
-            renderFuelMeterTable();
-            renderSummaries();
-            renderTotalsSummary();
-          }
-          updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline');
-        } catch {
-          alert("Failed to delete record. Please try again.");
-          updateSyncStatus('offline');
-        }
-      }
-    };
-
-    // --- Cost Form Submit ---
-    document.getElementById('costForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      updateSyncStatus('syncing');
-      let date = document.getElementById('costDate').value || new Date().toISOString().split('T')[0];
-      let item = document.getElementById('costItem').value;
-      let cost = roundN(document.getElementById('costAmount').value, 2);
-      let subItem = document.getElementById('costSubItem').value || '';
-      let record = { date, item, subItem, cost };
-
-      try {
-        if (costEditIndex >= 0) {
-          if (isFirebaseConfigured && db && costRecords[costEditIndex].firebaseId) {
-            await updateDoc(doc(db, 'costRecords', costRecords[costEditIndex].firebaseId), record);
-          } else if (!isFirebaseConfigured) {
-            costRecords[costEditIndex] = record;
-            localStorage.setItem('costRecords', JSON.stringify(costRecords));
-            renderCostTable();
-          }
-          costEditIndex = -1;
-          document.getElementById('cancelCostEditBtn').style.display = 'none';
-        } else {
-          if (isFirebaseConfigured && db) {
-            await addDoc(collection(db, 'costRecords'), record);
-          } else if (!isFirebaseConfigured) {
-            costRecords.push(record);
-            localStorage.setItem('costRecords', JSON.stringify(costRecords));
-            renderCostTable();
-          }
-        }
-        showToast('✅ Cost saved');
-        e.target.reset();
-        document.getElementById('costDate').value = new Date().toISOString().split('T')[0];
-        updateSyncStatus(isFirebaseConfigured ? 'online' : 'offline');
-      } catch {
-        alert("Failed to save cost record. Please try again.");
-        updateSyncStatus('offline');
-      }
-    });
-
-    window.renderSummaries = function() {
-      let summaryDiv = document.getElementById('monthlySummary');
-      summaryDiv.innerHTML = '';
-      const computedRecords = computeAvailableFuel(records, BIKE_MILEAGE);
-      let grouped = {};
-      computedRecords.forEach(r => {
-        let month = (r.date || '').substring(0, 7);
-        if (!grouped[month]) grouped[month] = { distance: 0, fuel: 0, cost: 0, remaining: 0 };
-        grouped[month].distance += num(r.distance);
-        grouped[month].fuel += num(r.fuel);
-        grouped[month].cost += num(r.cost);
-        grouped[month].remaining += num(r.remainingKm);
-      });
-      for (let m in grouped) {
-        const g = grouped[m];
-        const avgMileage = g.fuel > 0 ? (g.distance / g.fuel).toFixed(2) : '—';
-        summaryDiv.innerHTML += `<p><b>${m}</b>: 
-          ${g.distance.toFixed(1)} km, 
-          ${g.fuel.toFixed(1)} L, 
-          ₹${g.cost.toFixed(2)}, 
-          Mileage: ${avgMileage} km/L, 
-          Remaining: ${g.remaining.toFixed(1)} km</p>`;
-      }
-      renderTotalsSummary();
+    window.deleteCostRecord = function(i) {
+      costRecords.splice(i, 1);
+      renderCostTable();
     };
   </script>
 </body>
