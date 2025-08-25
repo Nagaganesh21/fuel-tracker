@@ -434,6 +434,10 @@
             <label for="costAmount">Cost (₹)</label>
             <input type="number" id="costAmount" step="0.01" required aria-label="Cost Amount">
           </div>
+          <div>
+            <label for="costDescription">Description</label>
+            <input type="text" id="costDescription" maxlength="100" placeholder="Enter details" aria-label="Description">
+          </div>
           <div style="grid-column: 1 / -1; text-align:center;">
             <button type="submit" id="costSubmitBtn">💾 Save Cost</button>
             <button type="button" id="cancelCostEditBtn" class="cancel-edit-btn" style="display:none;">Cancel Edit</button>
@@ -447,6 +451,7 @@
             <tr>
               <th>Date</th>
               <th>Item</th>
+              <th>Description</th>
               <th>Cost (₹)</th>
               <th>Actions</th>
             </tr>
@@ -718,6 +723,7 @@ Your data will then sync across all devices!`);
         let row = `<tr>
           <td>${rec.date || ''}</td>
           <td>${rec.item || ''}</td>
+          <td>${rec.description || ''}</td>
           <td>₹${num(rec.cost).toFixed(2)}</td>
           <td>
             <div class="action-group">
@@ -735,6 +741,7 @@ Your data will then sync across all devices!`);
       let rec = costRecords[i];
       document.getElementById('costDate').value = rec.date || new Date().toISOString().split('T')[0];
       document.getElementById('costItem').value = rec.item || 'Petrol';
+      document.getElementById('costDescription').value = rec.description || '';
       document.getElementById('costAmount').value = num(rec.cost).toFixed(2);
       costEditIndex = i;
       document.getElementById('cancelCostEditBtn').style.display = 'inline-block';
@@ -746,6 +753,7 @@ Your data will then sync across all devices!`);
       document.getElementById('costForm').reset();
       document.getElementById('costDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('cancelCostEditBtn').style.display = 'none';
+      document.getElementById('costDescription').value = '';
     };
 
     window.deleteCostRecord = async function(i) {
@@ -935,7 +943,8 @@ Your data will then sync across all devices!`);
       let date = document.getElementById('costDate').value || new Date().toISOString().split('T')[0];
       let item = document.getElementById('costItem').value;
       let cost = roundN(document.getElementById('costAmount').value, 2);
-      let record = { date, item, cost };
+      let description = document.getElementById('costDescription').value.trim();
+      let record = { date, item, description, cost };
       try {
         if (costEditIndex >= 0) {
           if (isFirebaseConfigured && db && costRecords[costEditIndex].firebaseId) {
