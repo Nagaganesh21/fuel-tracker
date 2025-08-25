@@ -472,7 +472,7 @@
         const distance = num(r.distance);
         const fuelAdded = num(r.fuel);
         const fuelUsed = mileage > 0 ? distance / mileage : 0;
-        const availableFuel = clamp0(fuelAdded - fuelUsed);
+        const availableFuel = roundN(fuelAdded - fuelUsed, 2);
         const remainingKm = roundN(availableFuel * mileage, 1);
         const origIdx = records.findIndex(rr => rr.date === r.date && rr.start === r.start && rr.end === r.end);
         return {
