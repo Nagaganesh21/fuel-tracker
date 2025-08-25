@@ -302,15 +302,24 @@
   #fuelMeterTable td {
     font-size: 0.78rem;
     padding: 4px 3px;
-  }
-  .action-btn span {
-    display: none; /* Hide text on small screens, show only icon */
-  }
-  .action-btn {
-    min-width: 32px;
-    font-size: 1.1em;
-  }
-}
+	  }
+	  .action-btn span {
+	    display: none; /* Hide text on small screens, show only icon */
+	  }
+	  .action-btn {
+	    min-width: 32px;
+	    font-size: 1.1em;
+	  }
+	}
+	  #costSummaryCard {
+		  border: 2px solid #4A4AFF;
+		  border-radius: 8px;
+		  padding: 15px;
+		  margin-bottom: 15px;
+		  background: #f9f9ff;
+		  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+		}
+
   </style>
 </head>
 <body>
@@ -415,8 +424,8 @@
     <!-- Cost Expenditure Entry Form & Table -->
     <div id="costSection" class="entry-form-section">
 	  <div class="card" id="costSummaryCard">
-		<h3 style="margin-top: 0;">Cost Summary</h3>
-		<div id="costSummary"></div>
+		<h3 style="margin-top: 0; text-align:center;">Cost Summary</h3>
+ 		<div id="costSummary" style="text-align:center; font-size:1.1em; line-height:1.8;"></div>
 	  </div>
       <div class="card">
         <h2>Cost Expenditure</h2>
