@@ -272,81 +272,106 @@
       display: block;
       animation: fadeIn 0.4s ease;
     }
-    /* --- Cost Table styles --- */
-    #costTable th, #costTable td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: center;
-    }
-    #costTable th {
-      background: #f0f0f0;
-    }
-    /* --- Fuel Table styles --- */
-    #fuelMeterTable th, #fuelMeterTable td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: center;
-    }
-    #fuelMeterTable th {
-      background: #f0f0f0;
-    }
-    /* Fuel Meter Table Improvements */
-#fuelMeterTable th,
-#fuelMeterTable td {
-  padding: 6px 8px;
-  font-size: 0.95rem;
-  white-space: nowrap;
-}
+    /* --- Unified Table Styles (Fuel + Cost) --- */
+	#fuelMeterTable th, #fuelMeterTable td,
+	#costTable th, #costTable td {
+	  padding: 6px 8px;
+	  border: 1px solid #ddd;
+	  text-align: center;
+	  font-size: 0.95rem;
+	  white-space: nowrap;
+	}
 
-#fuelMeterTable td {
-  vertical-align: middle;
-}
+	#fuelMeterTable th,
+	#costTable th {
+	  background: #f0f0f0;
+	}
 
-/* Compact Action Buttons (Edit/Delete) */
-.action-btn {
-  padding: 2px 10px;
-  font-size: 0.85rem;
-  gap: 4px;
-  flex-direction: row !important; /* Icon and text side-by-side */
-  min-width: 60px;
-  justify-content: center;
-}
+	/* Compact Action Buttons (Edit/Delete) for both tables */
+	.action-btn {
+	  padding: 2px 10px;
+	  font-size: 0.85rem;
+	  gap: 4px;
+	  flex-direction: row !important; /* icon + text side-by-side */
+	  min-width: 60px;
+	  justify-content: center;
+	}
 
-.action-group {
-  gap: 4px;
-}
+	.action-group {
+	  gap: 4px;
+	}
 
-@media (max-width: 600px) {
-  #fuelMeterTable th,
-  #fuelMeterTable td {
-    font-size: 0.78rem;
-    padding: 4px 3px;
+	/* Mobile-friendly: shrink table & buttons */
+	@media (max-width: 600px) {
+	  #fuelMeterTable th, #fuelMeterTable td,
+	  #costTable th, #costTable td {
+		font-size: 0.78rem;
+		padding: 4px 3px;
 	  }
 	  .action-btn span {
-	    display: none; /* Hide text on small screens, show only icon */
+		display: none; /* hide text on small screens, show only icon */
 	  }
 	  .action-btn {
-	    min-width: 32px;
-	    font-size: 1.1em;
+		min-width: 32px;
+		font-size: 1.1em;
 	  }
 	}
+
+    /* Fuel Meter Table Improvements */
+	#fuelMeterTable th,
+	#fuelMeterTable td {
+	  padding: 6px 8px;
+	  font-size: 0.95rem;
+	  white-space: nowrap;
+	}
+
+	#fuelMeterTable td {
+	  vertical-align: middle;
+	}
+
+	/* Compact Action Buttons (Edit/Delete) */
+	.action-btn {
+	  padding: 2px 10px;
+	  font-size: 0.85rem;
+	  gap: 4px;
+	  flex-direction: row !important; /* Icon and text side-by-side */
+	  min-width: 60px;
+	  justify-content: center;
+	}
+
+	.action-group {
+	  gap: 4px;
+	}
+
+	@media (max-width: 600px) {
+	  #fuelMeterTable th,
+	  #fuelMeterTable td {
+		font-size: 0.78rem;
+		padding: 4px 3px;
+		  }
+		  .action-btn span {display: none; /* Hide text on small screens, show only icon */
+		  }
+		  .action-btn {
+			min-width: 32px;
+			font-size: 1.1em;
+		  }
+		}
 	  #costSummaryCard {
-		  border: 2px solid #4A4AFF;
-		  border-radius: 8px;
-		  padding: 15px;
-		  margin-bottom: 15px;
-		  background: #f9f9ff;
-		  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+		border: 2px solid #4A4AFF;
+		border-radius: 8px;
+		padding: 15px;
+		margin-bottom: 15px;
+		background: #f9f9ff;
+		box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 		}
 
-  </style>
+	</style>
 </head>
 <body>
   <header>
     <div id="syncStatus" class="sync-status sync-offline">🔴 Offline</div>
     <h1>⛽ Fuel Tracker</h1>
   </header>
-
   <div id="firebaseNotice" class="firebase-notice">
     ⚠️ <strong>Firebase Setup Required:</strong> Configure Firebase for cloud sync across devices.
     <button onclick="showFirebaseSetup()" class="success">Setup Guide</button>
