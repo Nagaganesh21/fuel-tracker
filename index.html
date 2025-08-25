@@ -136,13 +136,32 @@
     .settings-toggle { background: #4e54c8; }
     .settings-toggle:hover { background: #3b40a4; }
     .settings-panel {
-      display: none;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin: 10px;
-    }
+	  display: none;
+	  background: white;
+	  padding: 20px;
+	  border-radius: 12px;
+	  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+	  margin: 15px auto;
+	  max-width: 400px;     /* limit width */
+	  text-align: center;   /* center align */
+	}
+	.settings-panel label {
+	  font-weight: 600;
+	  margin-right: 8px;
+	}
+	.settings-panel input {
+	  padding: 6px 10px;
+	  border-radius: 6px;
+	  border: 1px solid #ccc;
+	  width: 120px;  /* fixed width so it won’t stretch */
+	}
+	.settings-panel .action-group {
+	  margin-top: 15px;
+	  display: flex;
+	  justify-content: center;
+	  gap: 10px;
+	}
+
     .settings-panel .action-btn {
       padding: 6px 14px;
       font-size: 0.85rem;
